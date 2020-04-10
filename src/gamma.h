@@ -76,7 +76,7 @@ bool gamma_move(gamma_t *g, uint32_t player, uint32_t x, uint32_t y);
  * @return Liczba pól zajętych przez gracza lub zero,
  * jeśli któryś z parametrów jest niepoprawny.
  */
-//uint64_t gamma_busy_fields(gamma_t *g, uint32_t player);
+uint64_t gamma_busy_fields(gamma_t *g, uint32_t player);
 
 /** @brief Podaje liczbę pól, jakie jeszcze gracz może zająć.
  * Podaje liczbę wolnych pól, na których w danym stanie gry gracz @p player może
@@ -87,7 +87,7 @@ bool gamma_move(gamma_t *g, uint32_t player, uint32_t x, uint32_t y);
  * @return Liczba pól, jakie jeszcze może zająć gracz lub zero,
  * jeśli któryś z parametrów jest niepoprawny.
  */
-//uint64_t gamma_free_fields(gamma_t *g, uint32_t player);
+uint64_t gamma_free_fields(gamma_t *g, uint32_t player);
 
 /** @brief Sprawdza, czy gracz może wykonać złoty ruch.
  * Sprawdza, czy gracz @p player jeszcze nie wykonał w tej rozgrywce złotego
@@ -99,7 +99,7 @@ bool gamma_move(gamma_t *g, uint32_t player, uint32_t x, uint32_t y);
  * złotego ruchu i jest przynajmniej jedno pole zajęte przez innego gracza,
  * a @p false w przeciwnym przypadku.
  */
-//bool gamma_golden_possible(gamma_t *g, uint32_t player);
+bool gamma_golden_possible(gamma_t *g, uint32_t player);
 
 /** @brief Daje napis opisujący stan planszy.
  * Alokuje w pamięci bufor, w którym umieszcza napis zawierający tekstowy

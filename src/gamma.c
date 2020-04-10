@@ -13,7 +13,7 @@ struct gamma {
   uint32_t *player_fields, *player_areas, *player_adjacent;
   uint32_t players, width, height, max_areas;
   uint64_t empty_fields;
-  uint64_t legthOfString;
+  uint64_t legthOfString; // jeszcze nie obslugiwane !!!
   bool *player_golden_used;
 };
 
@@ -91,7 +91,7 @@ bool is_adjacent (gamma_t *g, uint32_t player, uint32_t x, uint32_t y) {
    2) Łączy różne obszary w jeden
    3) Dołącza pole [x, y] do tego obszaru (jeśli brak obszarów to tworzy nowy)
 */
-uint32_t areas_adj (gamma_t *g, uint32_t player, uint32_t x, uint32_t y) {
+void update_dsu (gamma_t *g, uint32_t player, uint32_t x, uint32_t y) {
   uint64_t prev_areas[4];
   uint16_t i, j = 0, k;
   bool new_area;
@@ -110,9 +110,8 @@ uint32_t areas_adj (gamma_t *g, uint32_t player, uint32_t x, uint32_t y) {
         }
         if (new_area) {
           prev_areas[j] = curr_area;
-          if (j > 0) {
+          if (j > 0)
             g -> dsu[curr_area] = prev_areas[0];
-          }
           j++;
         }
       }
@@ -123,7 +122,7 @@ uint32_t areas_adj (gamma_t *g, uint32_t player, uint32_t x, uint32_t y) {
   else
     g -> dsu[ get_position(g, x, y) ] = get_position(g, x, y);
 
-  return j;
+  g -> player_areas[player - 1] -= j - 1;
 }
 
 
@@ -157,76 +156,68 @@ void gamma_debug(gamma_t *g) {
   printf("\n-------------\n");
 }
 
+// n = 0, 1, 2, 3.
+uint32_t nth_neighbours_val (gamma_t *g, uint16_t n, uint32_t x, uint32_t y) {
+  return g -> board[get_position(g, x + X[n], y + Y[n])];
+}
+
 // zakłada, że pole [x, y] jest puste.
-void update_adjacency (gamma_t *g,  uint32_t player, uint32_t x, uint32_t y, bool is_adj) {
-  uint16_t i;
-  if (is_adj)
+void update_adjacency (gamma_t *g,  uint32_t player, uint32_t x, uint32_t y) {
+  uint16_t i, j;
+  if (is_adjacent(g, player, x, y))
     g -> player_adjacent[player - 1] --;
 
   for (i = 0; i < 4; i++) {
     if (! is_addr_correct(g, x + X[i], y + Y[i])) continue;
-    if (g -> board[get_position(g, x + X[i], y + Y[i])] == 0) {
+    if (nth_neighbours_val(g, i, x, y) == 0) {
       if (! is_adjacent (g, player, x + X[i], y + Y[i]))
         g -> player_adjacent[player - 1] ++;
-    } else if (g -> board[get_position(g, x + X[i], y + Y[i])] != player) {
-        //
+    } else if (nth_neighbours_val(g, i, x, y) != player) {
+      bool b = true;
+      for (j = 0 ; j < i; j++)
+        if (nth_neighbours_val(g, j, x, y) == nth_neighbours_val(g, i, x, y))
+          b = false;
+      if (b)
+        g -> player_adjacent[nth_neighbours_val(g, i, x, y) - 1] --;
     }
   }
 }
 
-bool gamma_move (gamma_t *g, uint32_t player, uint32_t x, uint32_t y) {
-  uint64_t pos;
-  // sprawdzenie danych wejsciowych
-  // Ruch nie moze zwiekszyc liczby obszarow gracza powyzej [max_areas]
-  if (g == NULL || player == 0 || player >= (g -> players))
-    return false;
+bool gm_input_incorrect (gamma_t *g, uint32_t player, uint32_t x, uint32_t y) {
+  if (g == NULL || player == 0 || player > (g -> players))
+    return true;
   if (! is_addr_correct(g, x, y))
+    return true;
+  if (g -> board[get_position(g, x, y)] != 0)
+    return true;
+  return false;
+}
+
+bool too_many_areas (gamma_t *g, uint32_t player, uint32_t x, uint32_t y) {
+
+  if ((g -> player_areas[player - 1]) == (g -> max_areas) && ! is_adjacent(g, player, x, y))
+    return true;
+  return false;
+}
+
+bool gamma_move (gamma_t *g, uint32_t player, uint32_t x, uint32_t y) {
+  if (gm_input_incorrect(g, player, x, y))
     return false;
-  pos = get_position(g, x, y);
-  if (g -> board[pos] != 0)
-    return false;
-  bool is_adj = is_adjacent(g, player, x, y);
-
-  if ((g -> player_areas[player - 1]) == (g -> max_areas) && ! is_adj)
+  if (too_many_areas(g, player, x, y))
     return false;
 
-  uint32_t areas_connected = areas_adj(g, player, x, y); // ile roznych obszrow sasiaduje z (x, y)
-  printf("Areas connected: %d\n", areas_connected);
+  update_adjacency(g, player, x, y);
 
-  // Postawinie pionka byc moze zmienilo troszke liczbe pol na ktorych gracz
-  // moze sie ruszyc bez zwiekszania liczby swoich obszarow.
+  update_dsu(g, player, x, y);
 
-  update_adjacency(g, player, x, y, is_adj);
-
-  // Miejsca na ktorych inni gracze moga postawic pionka bez zwiekszania liczby
-  // swoich obszarow tez wlasnie sie zmienila. Uwzglednijmy to w wyliczniach!
-  /*for (i = 0; i < 4; i++)
-    if (g -> board[hood[i]] != 0 && g -> board[hood[i]] != player)
-      g -> player_adjacent[ g -> board[hood[i]] ]--;*/
-
-  // Zmienila sie liczba obszarow gracza? Liczba pol na pewno. Tak samo liczba
-  // pustych pol na plaszy. Nadpiszmy tez w koncu pole o ktore sie rozchodzi
-  //if (adj == 0) {
-    //g -> player_areas[player - 1]++;
-    //g -> board[pos] = player;
-  /*} else {
-    g -> board[pos] = adj;
-  }*/
-
-  g -> board[ pos ] = player;
-  g -> player_areas[player - 1] -= areas_connected - 1;
+  g -> board[ get_position(g, x, y) ] = player;
   g -> player_fields[player - 1]++;
   g -> empty_fields--;
+
   gamma_debug(g);
 
   return true;
 }
-
-// implementacja kolejki
-
-
-// implementacja BFSa
-
 
 /*bool gamma_golden_move(gamma_t *g, uint32_t player, uint32_t x, uint32_t y) {
   // TODO: Sprawdzic poprawnosc danych
@@ -249,7 +240,7 @@ bool gamma_move (gamma_t *g, uint32_t player, uint32_t x, uint32_t y) {
 
 
   return false;
-}
+}*/
 
 uint64_t gamma_busy_fields(gamma_t *g, uint32_t player) {
   return g -> player_fields[player - 1];
@@ -266,7 +257,7 @@ bool gamma_golden_possible(gamma_t *g, uint32_t player) {
   return (! (g -> player_golden_used[player - 1])) &&
     ((g -> width * g -> height) - (g -> empty_fields) -
     (g -> player_fields[player - 1]) > 0);
-}*/
+}
 
 /*char* gamma_board(gamma_t *g) {
   uint32_t i, j;
