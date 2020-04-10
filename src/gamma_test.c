@@ -20,7 +20,7 @@
 /**
  * Tak ma wyglądać plansza po wykonaniu wszystkich testów.
  */
-static const char board[] =
+/*static const char board[] =
   "1.........\n"
   "..........\n"
   "..........\n"
@@ -30,7 +30,7 @@ static const char board[] =
   "..........\n"
   "1.........\n"
   "1221......\n"
-  "1.........\n";
+  "1.........\n";*/
 
 /** @brief Testuje silnik gry gamma.
  * Przeprowadza przykładowe testy silnika gry gamma.
@@ -45,9 +45,29 @@ int main() {
 
   g = gamma_new(10, 10, 2, 3);
   assert(g != NULL);
-
+  printf("OKI\n");
   assert(gamma_move(g, 1, 0, 0));
-  assert(gamma_busy_fields(g, 1) == 1);
+
+  assert(gamma_move(g, 1, 2, 0));
+  assert(gamma_move(g, 1, 1, 0));
+
+  assert(gamma_move(g, 1, 3, 0));
+  assert(gamma_move(g, 1, 2, 1));
+  assert(gamma_move(g, 1, 2, 2));
+
+
+  assert(gamma_move(g, 1, 0, 2));
+  assert(gamma_move(g, 1, 0, 1));
+
+
+
+  assert(gamma_move(g, 1, 1, 2));
+
+  assert(gamma_move(g, 1, 5, 5));
+  assert(gamma_move(g, 1, 6, 6));
+  assert(! gamma_move(g, 1, 7, 7));
+
+  /*assert(gamma_busy_fields(g, 1) == 1);
   assert(gamma_busy_fields(g, 2) == 0);
   assert(gamma_free_fields(g, 1) == 99);
   assert(gamma_free_fields(g, 2) == 99);
@@ -72,8 +92,8 @@ int main() {
   assert(gamma_free_fields(g, 1) == 9);
   assert(gamma_free_fields(g, 2) == 92);
   assert(!gamma_move(g, 2, 0, 1));
-  assert(gamma_golden_possible(g, 2));
-  assert(!gamma_golden_move(g, 2, 0, 1));
+  assert(gamma_golden_possible(g, 2));*/
+  /*assert(!gamma_golden_move(g, 2, 0, 1));
   assert(gamma_golden_move(g, 2, 5, 5));
   assert(!gamma_golden_possible(g, 2));
   assert(gamma_move(g, 2, 6, 6));
@@ -85,13 +105,13 @@ int main() {
   assert(gamma_busy_fields(g, 1) == 5);
   assert(gamma_free_fields(g, 1) == 8);
   assert(gamma_busy_fields(g, 2) == 4);
-  assert(gamma_free_fields(g, 2) == 10);
+  assert(gamma_free_fields(g, 2) == 10);*/
 
-  char *p = gamma_board(g);
-  assert(p);
-  assert(strcmp(p, board) == 0);
-  printf(p);
-  free(p);
+  //char *p = gamma_board(g);
+  //assert(p);
+  /*assert(strcmp(p, board) == 0);*/
+  //printf(p);
+  //free(p);
 
   gamma_delete(g);
   return 0;
