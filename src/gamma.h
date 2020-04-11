@@ -17,6 +17,8 @@
  */
 typedef struct gamma gamma_t;
 
+void gamma_debug(gamma_t *g);
+
 /** @brief Tworzy strukturę przechowującą stan gry.
  * Alokuje pamięć na nową strukturę przechowującą stan gry.
  * Inicjuje tę strukturę tak, aby reprezentowała początkowy stan gry.
@@ -66,7 +68,7 @@ bool gamma_move(gamma_t *g, uint32_t player, uint32_t x, uint32_t y);
  * gdy gracz wykorzystał już swój złoty ruch, ruch jest nielegalny
  * lub któryś z parametrów jest niepoprawny.
  */
-//bool gamma_golden_move(gamma_t *g, uint32_t player, uint32_t x, uint32_t y);
+bool gamma_golden_move(gamma_t *g, uint32_t player, uint32_t x, uint32_t y);
 
 /** @brief Podaje liczbę pól zajętych przez gracza.
  * Podaje liczbę pól zajętych przez gracza @p player.
@@ -109,6 +111,6 @@ bool gamma_golden_possible(gamma_t *g, uint32_t player);
  * @return Wskaźnik na zaalokowany bufor zawierający napis opisujący stan
  * planszy lub NULL, jeśli nie udało się zaalokować pamięci.
  */
-//char* gamma_board(gamma_t *g);
+extern char* gamma_board(gamma_t *g);
 
 #endif /* GAMMA_H */

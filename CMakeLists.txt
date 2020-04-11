@@ -12,6 +12,7 @@ set_property(GLOBAL PROPERTY RULE_MESSAGES OFF)
 # Chcemy zobaczyć polecenia wywołane przez make.
 set(CMAKE_VERBOSE_MAKEFILE ON)
 
+
 # Ustawiamy wspólne opcje kompilowania dla wszystkich wariantów projektu.
 set(CMAKE_C_FLAGS "-std=c11 -Wall -Wextra")
 # Domyślne opcje dla wariantów Release i Debug są sensowne.
@@ -23,7 +24,13 @@ set(CMAKE_C_FLAGS "-std=c11 -Wall -Wextra")
 set(SOURCE_FILES
     src/gamma.c
     src/gamma.h
-    src/gamma_test.c)
+    src/gamma_test.c
+    src/basic_manipulations.c
+    src/basic_manipulations.h
+    src/gamma-move-aux.c
+    src/gamma-move-aux.h
+    src/golden-move-aux.c
+    src/golden-move-aux.h)
 
 # Wskazujemy plik wykonywalny.
 add_executable(gamma ${SOURCE_FILES})

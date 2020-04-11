@@ -1,21 +1,12 @@
 # include <stdio.h>
 # include <stdbool.h>
 # include <stdint.h>
-# include "gamma.h"
 # include <stdlib.h>
 
-int X[4] = {1, -1, 0, 0};
-int Y[4] = {0, 0, 1, -1};
-
-struct gamma {
-  uint64_t *dsu;
-  uint32_t *board;
-  uint32_t *player_fields, *player_areas, *player_adjacent;
-  uint32_t players, width, height, max_areas;
-  uint64_t empty_fields;
-  uint64_t legthOfString; // jeszcze nie obslugiwane !!!
-  bool *player_golden_used;
-};
+# include "gamma.h"
+# include "basic_manipulations.h"
+# include "gamma-move-aux.h"
+# include "basic_manipulations.h"
 
 /// musi dealokować gamma_t!!!!!, musi zwracać NULL a nie się wywalać !!!
 gamma_t* gamma_new (uint32_t width, uint32_t height, uint32_t players, uint32_t areas) {
@@ -54,78 +45,6 @@ void gamma_delete(gamma_t *g) {
   free (g);
 }
 
-
-bool is_addr_correct (gamma_t *g, uint32_t x, uint32_t y) {
-  return x < (g -> width) && y < (g -> height);
-}
-
-/* Zwraca adres w pamieci pola zadanego przez wspolrzedne.*/
-uint64_t get_position (gamma_t *g, uint32_t x, uint32_t y) {
-  return (g -> height * y) + x;
-}
-
-/* Zwraca reprezentatnta pola. */
-uint64_t find (gamma_t *g, uint64_t position) {
-  uint64_t* zawartosc = g -> dsu + position;
-  if (*zawartosc == position) {
-    return position;
-  } else {
-    *zawartosc = find(g, *zawartosc);
-    return *zawartosc;
-  }
-}
-
-/* Jesli pole (x, y) nie sasiaduje z polem gracza zwraca 0.
-   W przeciwnym przypadku zwraca reprezentanta jednego z nich */
-bool is_adjacent (gamma_t *g, uint32_t player, uint32_t x, uint32_t y) {
-  uint32_t i;
-  for (i = 0; i < 4; i++)
-    if (is_addr_correct(g, x + X[i], y + Y[i]))
-      if ((g -> board)[ get_position (g, x + X[i], y + Y[i]) ] == player)
-        return true;
-
-  return false;
-}
-
-/* 1) Zwraca liczbę różnych obszarów
-   2) Łączy różne obszary w jeden
-   3) Dołącza pole [x, y] do tego obszaru (jeśli brak obszarów to tworzy nowy)
-*/
-void update_dsu (gamma_t *g, uint32_t player, uint32_t x, uint32_t y) {
-  uint64_t prev_areas[4];
-  uint16_t i, j = 0, k;
-  bool new_area;
-  uint64_t curr_area, curr_pos;
-  for (i = 0; i < 4; i++) {
-    if (is_addr_correct(g, x + X[i], y + Y[i])) {
-      curr_pos = get_position (g, x + X[i], y + Y[i]);
-      if (g -> board[curr_pos] == player) {
-        new_area = true;
-        curr_area = find(g, curr_pos);
-        for (k = 0; k < j; k++) {
-          if (prev_areas[k] == curr_area) {
-            new_area = false;
-            break;
-          }
-        }
-        if (new_area) {
-          prev_areas[j] = curr_area;
-          if (j > 0)
-            g -> dsu[curr_area] = prev_areas[0];
-          j++;
-        }
-      }
-    }
-  }
-  if (j > 0)
-    g -> dsu[ get_position(g, x, y) ] = prev_areas[0];
-  else
-    g -> dsu[ get_position(g, x, y) ] = get_position(g, x, y);
-
-  g -> player_areas[player - 1] -= j - 1;
-}
-
-
 void gamma_debug(gamma_t *g) {
   uint32_t i, j;
   for (i = 0; i < g -> width; i++) {
@@ -156,49 +75,6 @@ void gamma_debug(gamma_t *g) {
   printf("\n-------------\n");
 }
 
-// n = 0, 1, 2, 3.
-uint32_t nth_neighbours_val (gamma_t *g, uint16_t n, uint32_t x, uint32_t y) {
-  return g -> board[get_position(g, x + X[n], y + Y[n])];
-}
-
-// zakłada, że pole [x, y] jest puste.
-void update_adjacency (gamma_t *g,  uint32_t player, uint32_t x, uint32_t y) {
-  uint16_t i, j;
-  if (is_adjacent(g, player, x, y))
-    g -> player_adjacent[player - 1] --;
-
-  for (i = 0; i < 4; i++) {
-    if (! is_addr_correct(g, x + X[i], y + Y[i])) continue;
-    if (nth_neighbours_val(g, i, x, y) == 0) {
-      if (! is_adjacent (g, player, x + X[i], y + Y[i]))
-        g -> player_adjacent[player - 1] ++;
-    } else if (nth_neighbours_val(g, i, x, y) != player) {
-      bool b = true;
-      for (j = 0 ; j < i; j++)
-        if (nth_neighbours_val(g, j, x, y) == nth_neighbours_val(g, i, x, y))
-          b = false;
-      if (b)
-        g -> player_adjacent[nth_neighbours_val(g, i, x, y) - 1] --;
-    }
-  }
-}
-
-bool gm_input_incorrect (gamma_t *g, uint32_t player, uint32_t x, uint32_t y) {
-  if (g == NULL || player == 0 || player > (g -> players))
-    return true;
-  if (! is_addr_correct(g, x, y))
-    return true;
-  if (g -> board[get_position(g, x, y)] != 0)
-    return true;
-  return false;
-}
-
-bool too_many_areas (gamma_t *g, uint32_t player, uint32_t x, uint32_t y) {
-
-  if ((g -> player_areas[player - 1]) == (g -> max_areas) && ! is_adjacent(g, player, x, y))
-    return true;
-  return false;
-}
 
 bool gamma_move (gamma_t *g, uint32_t player, uint32_t x, uint32_t y) {
   if (gm_input_incorrect(g, player, x, y))
