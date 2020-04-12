@@ -95,29 +95,6 @@ bool gamma_move (gamma_t *g, uint32_t player, uint32_t x, uint32_t y) {
   return true;
 }
 
-/*bool gamma_golden_move(gamma_t *g, uint32_t player, uint32_t x, uint32_t y) {
-  // TODO: Sprawdzic poprawnosc danych
-
-  // .......
-
-  // Sprawdzamy, czy pole nalezy do innego gracza
-  uint64_t pos = get_field(g, x, y);
-  if (g -> board[find(g, pos)] == player || g -> board[find(g, pos)] == 0)
-    return false;
-  // Ok, nalezy. Teraz upewnijmy sie ze obszar gracza nie zostanie
-  // nielegalnie rozspojniony. Policzmy z iloma polami gracza to pole graniczy.
-
-  // .......
-
-  // Ok. pole da sie usunac. Ale to zmienia troszke liczbe pol na ktorych
-  // poszczegolni gracze moga postawic swoje pionki.
-
-  // .......
-
-
-  return false;
-}*/
-
 uint64_t gamma_busy_fields(gamma_t *g, uint32_t player) {
   return g -> player_fields[player - 1];
 }

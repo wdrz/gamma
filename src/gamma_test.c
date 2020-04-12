@@ -41,14 +41,32 @@
 int main() {
   gamma_t *g;
 
-  g = gamma_new(0, 0, 0, 0);
-  assert(g == NULL);
 
-  g = gamma_new(10, 10, 2, 3);
+  /*g = gamma_new(10, 10, 4, 4);
   assert(g != NULL);
 
-  assert(gamma_move(g, 1, 0, 0));
 
+  assert(gamma_move(g, 3, 2, 2));
+  assert(gamma_move(g, 3, 3, 2));
+  assert(gamma_move(g, 3, 4, 2));
+  assert(gamma_move(g, 3, 4, 3));
+  assert(gamma_move(g, 3, 4, 4));
+  assert(gamma_move(g, 3, 2, 4));
+  assert(gamma_move(g, 3, 3, 4));
+  assert(gamma_move(g, 3, 2, 3));
+
+  assert(gamma_move(g, 3, 5, 4));
+  assert(gamma_move(g, 3, 4, 5));
+  //assert(gamma_move(g, 3, 5, 5));
+
+  assert(gamma_move(g, 3, 3, 3));
+
+  //assert(gamma_golden_move(g, 4, 4, 4));
+  assert(gamma_golden_move(g, 4, 3, 3));
+  gamma_debug(g);*/
+
+
+  /* TEST 1
   assert(gamma_move(g, 1, 2, 0));
   assert(gamma_move(g, 1, 1, 0));
 
@@ -73,8 +91,17 @@ int main() {
   assert(! gamma_move(g, 1, 7, 7));
 
   assert(gamma_golden_move(g, 2, 2, 1));
-  gamma_debug(g);
-  /*assert(gamma_busy_fields(g, 1) == 1);
+  gamma_debug(g);*/
+
+  /// TEST domyslny
+
+  g = gamma_new(0, 0, 0, 0);
+  assert(g == NULL);
+
+  g = gamma_new(10, 10, 2, 3);
+  assert(g != NULL);
+  assert(gamma_move(g, 1, 0, 0));
+  assert(gamma_busy_fields(g, 1) == 1);
   assert(gamma_busy_fields(g, 2) == 0);
   assert(gamma_free_fields(g, 1) == 99);
   assert(gamma_free_fields(g, 2) == 99);
@@ -100,8 +127,10 @@ int main() {
   assert(gamma_free_fields(g, 2) == 92);
   assert(!gamma_move(g, 2, 0, 1));
   assert(gamma_golden_possible(g, 2));
-  assert(!gamma_golden_move(g, 2, 0, 1));*/
-  /*assert(gamma_golden_move(g, 2, 5, 5));
+  assert(!gamma_golden_move(g, 2, 0, 1));
+
+  assert(gamma_golden_move(g, 2, 5, 5));
+  gamma_debug(g);
   assert(!gamma_golden_possible(g, 2));
   assert(gamma_move(g, 2, 6, 6));
   assert(gamma_busy_fields(g, 1) == 4);
@@ -109,11 +138,11 @@ int main() {
   assert(gamma_busy_fields(g, 2) == 5);
   assert(gamma_free_fields(g, 2) == 13);
   assert(gamma_golden_move(g, 1, 3, 1));
+  gamma_debug(g);
   assert(gamma_busy_fields(g, 1) == 5);
   assert(gamma_free_fields(g, 1) == 8);
   assert(gamma_busy_fields(g, 2) == 4);
-  assert(gamma_free_fields(g, 2) == 10);*/
-
+  assert(gamma_free_fields(g, 2) == 10);
   //char *p = gamma_board(g);
   //assert(p);
   /*assert(strcmp(p, board) == 0);*/
