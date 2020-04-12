@@ -51,14 +51,19 @@ bool has_nth_neighbour (gamma_t *g, uint16_t n, uint32_t x, uint32_t y) {
   return is_addr_correct(g, x + X[n], y + Y[n]);
 }
 
-/**
- * Sprawdza, czy przynajmniej jeden z sąsiadów 0, ..., n - 1 pola [x, y]
- * należy do gracza value.
- */
+bool has_nth_neighbour_is_eq (gamma_t *g, uint64_t value, uint16_t n, uint32_t x, uint32_t y) {
+  return has_nth_neighbour(g, n, x, y) && nth_neighbours_val(g, n, x, y) == value;
+}
+
 bool scan_neighbours (gamma_t *g, uint16_t n, uint64_t value, uint32_t x, uint32_t y) {
   uint16_t i;
   for (i = 0 ; i < n; i++)
     if (nth_neighbours_val(g, i, x, y) == value)
       return true;
   return false;
+}
+
+uint16_t how_many_digits (uint32_t number) {
+  if (number <= 9) return 1;
+  else return how_many_digits(number / 10) + 1;
 }

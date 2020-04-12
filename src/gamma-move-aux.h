@@ -9,11 +9,13 @@
 #include <stdbool.h>
 #include "basic_manipulations.h"
 
+void update_length_of_gamma_board(gamma_t *g, uint32_t old, uint32_t new);
+
 /** @brief Aktualizuje stan struktury zbiorów rozłącznych.
  * 1) Łączy różne obszary w jeden
  * 2) Dołącza pole [x, y] do tego obszaru (jeśli brak obszarów to tworzy nowy)
  */
-void update_dsu (gamma_t *g, uint32_t player, uint32_t x, uint32_t y);
+void update_dsu_and_areas (gamma_t *g, uint32_t player, uint32_t x, uint32_t y);
 
 /** @brief Aktualizuje liczby sąsiednich pól dla wszystkich graczy.
  * zakłada, że pole [x, y] jest puste.

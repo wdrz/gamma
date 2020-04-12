@@ -2,7 +2,6 @@
  * Udostępnie funkcje pomocnicze dla golden_move.
  */
 
-
 #ifndef GOLDEN_MOVE_AUX
 #define GOLDEN_MOVE_AUX
 

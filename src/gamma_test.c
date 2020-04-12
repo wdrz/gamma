@@ -42,7 +42,7 @@ int main() {
   gamma_t *g;
 
 
-  /*g = gamma_new(10, 10, 4, 4);
+  g = gamma_new(10, 10, 4, 4);
   assert(g != NULL);
 
 
@@ -63,8 +63,8 @@ int main() {
 
   //assert(gamma_golden_move(g, 4, 4, 4));
   assert(gamma_golden_move(g, 4, 3, 3));
-  gamma_debug(g);*/
-
+  gamma_debug(g);
+  gamma_delete(g);
 
   /* TEST 1
   assert(gamma_move(g, 1, 2, 0));
@@ -143,12 +143,19 @@ int main() {
   assert(gamma_free_fields(g, 1) == 8);
   assert(gamma_busy_fields(g, 2) == 4);
   assert(gamma_free_fields(g, 2) == 10);
-  //char *p = gamma_board(g);
-  //assert(p);
+  char *p = gamma_board(g);
+  assert(p);
   /*assert(strcmp(p, board) == 0);*/
-  //printf(p);
-  //free(p);
 
+  printf("HERE IT GOES:\n");
+  printf(p);
+  free(p);
+  printf("HERE IT ends:\n");
+  gamma_delete(g);
+
+  g = gamma_new(3, 3, 15, 2);
+  assert(gamma_move(g, 12, 1, 1));
+  printf(gamma_board(g));
   gamma_delete(g);
   return 0;
 }

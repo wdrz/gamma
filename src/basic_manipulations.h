@@ -59,7 +59,16 @@ uint32_t nth_neighbours_pos (gamma_t *g, uint16_t n, uint32_t x, uint32_t y);
 
 bool has_nth_neighbour (gamma_t *g, uint16_t n, uint32_t x, uint32_t y);
 
+/** @brief ...
+ * Sprawdza, czy przynajmniej jeden z sąsiadów 0, ..., n - 1 pola [x, y]
+ * należy do gracza value.
+ */
 bool scan_neighbours (gamma_t *g, uint16_t n, uint64_t value, uint32_t x, uint32_t y);
 
+bool has_nth_neighbour_is_eq (gamma_t *g, uint64_t value, uint16_t n, uint32_t x, uint32_t y);
+
 bool if_corr_is_eq (gamma_t *g, uint32_t player, uint32_t x, uint32_t y);
+
+uint16_t how_many_digits (uint32_t number);
+
 #endif

@@ -20,7 +20,7 @@ gamma_t* gamma_new (uint32_t width, uint32_t height, uint32_t players, uint32_t 
     g -> height = height;
     g -> max_areas = areas;
     g -> empty_fields = width * height;
-    g -> legthOfString = (width + 1) * height;
+    g -> legthOfString = (width + 1) * height + 1;
 
     g -> dsu = calloc (width * height, sizeof (uint64_t)); // byc moze tu wystarczy malloc
     g -> board = calloc (width * height, sizeof (uint32_t));
@@ -45,7 +45,7 @@ void gamma_delete(gamma_t *g) {
   free (g);
 }
 
-void gamma_debug(gamma_t *g) {
+/*void gamma_debug(gamma_t *g) {
   uint32_t i, j;
   for (i = 0; i < g -> width; i++) {
     for (j = 0; j < g -> height; j++) {
@@ -73,7 +73,7 @@ void gamma_debug(gamma_t *g) {
     printf("%d ", g -> player_adjacent[i]);
   }
   printf("\n-------------\n");
-}
+}*/
 
 
 bool gamma_move (gamma_t *g, uint32_t player, uint32_t x, uint32_t y) {
@@ -84,12 +84,12 @@ bool gamma_move (gamma_t *g, uint32_t player, uint32_t x, uint32_t y) {
 
   update_adjacency(g, player, x, y);
 
-  update_dsu(g, player, x, y);
+  update_dsu_and_areas(g, player, x, y);
 
   g -> board[ get_position(g, x, y) ] = player;
   g -> player_fields[player - 1]++;
   g -> empty_fields--;
-
+  update_length_of_gamma_board(g, 0, player);
   gamma_debug(g);
 
   return true;
@@ -112,16 +112,37 @@ bool gamma_golden_possible(gamma_t *g, uint32_t player) {
     (g -> player_fields[player - 1]) > 0);
 }
 
-/*char* gamma_board(gamma_t *g) {
+void write_number(uint32_t number, char *where) {
+  *where = '0'+(number % 10);
+  if (number >= 10)
+    write_number(number / 10, where - 1);
+}
+
+char* gamma_board(gamma_t *g) {
   uint32_t i, j;
-  char *board = malloc ((g -> width + 1) * g -> height + 1);
+  if (g == NULL) return NULL;
+  char *board = malloc(g->legthOfString);
+  char *iterator = board;
   if (board == NULL) return NULL;
-  for (i = 0; i < g -> width; i++) {
-    for (j = 0; j < g -> height; j++) {
-      board[(g -> width + 1) * j + i] = (char) '0' - g -> board[find(g, g -> board[get_field(g, i, j)])];
+  for (j = g -> height; j > 0; j--) {
+    for (i = 0; i < g -> width; i++) {
+      uint32_t number = g->board[get_position(g, i, j - 1)];
+      if (number == 0) {
+        *iterator = '.';
+      } else if (number <= 9) {
+        *iterator = '0' + number;
+      } else {
+        *iterator = '(';
+        iterator += how_many_digits(number);
+        write_number(number, iterator);
+        iterator++;
+        *iterator = ')';
+      }
+      iterator++;
     }
-    board[(g -> width + 1) * j + g -> width] = '\n';
+    *iterator = '\n';
+    iterator++;
   }
-  board[(g -> width + 1) * g-> height] = '\0';
+  *iterator = '\0';
   return board;
-}*/
+}

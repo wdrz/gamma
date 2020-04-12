@@ -1,6 +1,16 @@
 #include <stdlib.h>
 #include "gamma-move-aux.h"
 
+void update_length_of_gamma_board(gamma_t *g, uint32_t old, uint32_t new) {
+  uint16_t old_len = how_many_digits(old), new_len = how_many_digits(new);
+  g->legthOfString += new_len - old_len;
+  if (old_len > 1 && new_len == 1) {
+    g->legthOfString -= 2;
+  } else if (old_len == 1 && new_len > 1) {
+    g->legthOfString += 2;
+  }
+}
+
 // tej nie widac na zewnątrz
 bool table_contains (uint64_t arr[], uint64_t val, uint16_t arr_len) {
   uint16_t i;
@@ -10,30 +20,28 @@ bool table_contains (uint64_t arr[], uint64_t val, uint16_t arr_len) {
   return true;
 }
 
-void update_dsu (gamma_t *g, uint32_t player, uint32_t x, uint32_t y) {
-  uint64_t pos = get_position(g, x, y);
+
+void update_dsu_and_areas (gamma_t *g, uint32_t player, uint32_t x, uint32_t y) {
   uint64_t prev_areas[4], curr_area;
   uint16_t i, prev_areas_len = 0;
-  for (i = 0; i < 4; i++) {
+  for (i = 0; i < 4; i++)
     if (has_nth_neighbour(g, i, x, y) &&
         nth_neighbours_val(g, i, x, y) == player) {
-      curr_area = find(g, nth_neighbours_pos(g, i, x, y));
-      if (table_contains(prev_areas, curr_area, prev_areas_len)) {
-        prev_areas[prev_areas_len] = curr_area;
-        if (prev_areas_len > 0)
-          g -> dsu[curr_area] = prev_areas[0];
-        prev_areas_len++;
-      }
+          curr_area = find(g, nth_neighbours_pos(g, i, x, y));
+          if (table_contains(prev_areas, curr_area, prev_areas_len)) {
+            prev_areas[prev_areas_len] = curr_area;
+            if (prev_areas_len > 0)
+              g -> dsu[curr_area] = prev_areas[0];
+            prev_areas_len++;
+          }
     }
-  }
   if (prev_areas_len > 0)
-    g -> dsu[pos] = prev_areas[0];
+    g -> dsu[get_position(g, x, y)] = prev_areas[0];
   else
-    g -> dsu[pos] = pos;
+    g -> dsu[get_position(g, x, y)] = get_position(g, x, y);
 
   g -> player_areas[player - 1] -= prev_areas_len - 1;
 }
-
 
 void update_adjacency (gamma_t *g,  uint32_t player, uint32_t x, uint32_t y) {
   uint16_t i;
