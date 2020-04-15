@@ -1,17 +1,14 @@
 #include "basic_manipulations.h"
 
-//int X[4] = {1, -1, 0, 0};
-//int Y[4] = {0, 0, 1, -1};
-
 int X[8] = {-1, 0, 1,  0, -1, 1,  1, -1};
 int Y[8] = { 0, 1, 0, -1,  1, 1, -1, -1};
 
-bool is_addr_correct (gamma_t *g, uint32_t x, uint32_t y) {
-  return x < (g -> width) && y < (g -> height);
+bool is_addr_correct(gamma_t *g, uint32_t x, uint32_t y) {
+  return x < (g->width) && y < (g->height);
 }
 
-uint64_t get_position (gamma_t *g, uint32_t x, uint32_t y) {
-  return (g -> height * y) + x;
+uint64_t get_position(gamma_t *g, uint32_t x, uint32_t y) {
+  return (g->width * y) + x;
 }
 
 uint64_t find (gamma_t *g, uint64_t position) {
@@ -58,8 +55,9 @@ bool has_nth_neighbour_is_eq (gamma_t *g, uint64_t value, uint16_t n, uint32_t x
 bool scan_neighbours (gamma_t *g, uint16_t n, uint64_t value, uint32_t x, uint32_t y) {
   uint16_t i;
   for (i = 0 ; i < n; i++)
-    if (nth_neighbours_val(g, i, x, y) == value)
-      return true;
+    if (has_nth_neighbour(g, i, x, y))
+      if (nth_neighbours_val(g, i, x, y) == value)
+        return true;
   return false;
 }
 

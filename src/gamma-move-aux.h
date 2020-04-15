@@ -22,13 +22,29 @@ void update_dsu_and_areas (gamma_t *g, uint32_t player, uint32_t x, uint32_t y);
  */
 void update_adjacency (gamma_t *g,  uint32_t player, uint32_t x, uint32_t y);
 
-/** @brief Sprawdza czy wejscie jest niepoprawne.
- * .
- */
+
+ /** @brief Sprawdza czy wejscie funkcji gamma_move jest niepoprawne.
+  * Sprawdza czy można wykonać gamma_move na planszy i na pole przez gracza
+  * @param[in] player  – numer gracza, liczba dodatnia niewiększa od wartości
+  *                      @p players z funkcji @ref gamma_new,
+  * @param[in] x       – numer kolumny, liczba nieujemna mniejsza od wartości
+  *                      @p width z funkcji @ref gamma_new,
+  * @param[in] y       – numer wiersza, liczba nieujemna mniejsza od wartości
+  *                      @p height z funkcji @ref gamma_new.
+  * @return true jeśli da się, false jeśli nie
+  */
 bool gm_input_incorrect (gamma_t *g, uint32_t player, uint32_t x, uint32_t y);
 
-/** @brief Sprawdza, czy po wykonaniu ruchu liczba obszarów gracza będzie niedozwolona.
- * .
+// NIE
+/** @brief Sprawdza czy wejscie funkcji gamma_move jest niepoprawne.
+ * Sprawdza czy można wykonać gamma_move na planszy i na pole przez gracza
+ * @param[in] player  – numer gracza, liczba dodatnia niewiększa od wartości
+ *                      @p players z funkcji @ref gamma_new,
+ * @param[in] x       – numer kolumny, liczba nieujemna mniejsza od wartości
+ *                      @p width z funkcji @ref gamma_new,
+ * @param[in] y       – numer wiersza, liczba nieujemna mniejsza od wartości
+ *                      @p height z funkcji @ref gamma_new.
+ * @return true jeśli da się, false jeśli nie
  */
 bool too_many_areas (gamma_t *g, uint32_t player, uint32_t x, uint32_t y);
 #endif

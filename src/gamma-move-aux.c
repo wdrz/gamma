@@ -1,6 +1,14 @@
 #include <stdlib.h>
 #include "gamma-move-aux.h"
 
+bool table_contains (uint64_t arr[], uint64_t val, uint16_t arr_len) {
+  uint16_t i;
+  for (i = 0; i < arr_len; i++)
+    if (arr[i] == val)
+      return false;
+  return true;
+}
+
 void update_length_of_gamma_board(gamma_t *g, uint32_t old, uint32_t new) {
   uint16_t old_len = how_many_digits(old), new_len = how_many_digits(new);
   g->legthOfString += new_len - old_len;
@@ -10,16 +18,6 @@ void update_length_of_gamma_board(gamma_t *g, uint32_t old, uint32_t new) {
     g->legthOfString += 2;
   }
 }
-
-// tej nie widac na zewnątrz
-bool table_contains (uint64_t arr[], uint64_t val, uint16_t arr_len) {
-  uint16_t i;
-  for (i = 0; i < arr_len; i++)
-    if (arr[i] == val)
-      return false;
-  return true;
-}
-
 
 void update_dsu_and_areas (gamma_t *g, uint32_t player, uint32_t x, uint32_t y) {
   uint64_t prev_areas[4], curr_area;
@@ -48,22 +46,22 @@ void update_adjacency (gamma_t *g,  uint32_t player, uint32_t x, uint32_t y) {
   for (i = 0; i < 4; i++) {
     if (! has_nth_neighbour(g, i, x, y)) continue;
     if (nth_neighbours_val(g, i, x, y) == 0) {
-      if (! is_adjacent (g, player, x + X[i], y + Y[i]))
-        g -> player_adjacent[player - 1] ++;
+      if (! is_adjacent(g, player, x + X[i], y + Y[i]))
+        g->player_adjacent[player - 1] ++;
     } else if (! scan_neighbours(g, i, nth_neighbours_val(g, i, x, y), x, y)) {
-      g -> player_adjacent[nth_neighbours_val(g, i, x, y) - 1] --;
+      g->player_adjacent[nth_neighbours_val(g, i, x, y) - 1] --;
     }
   }
 }
 
 
 bool gm_input_incorrect (gamma_t *g, uint32_t player, uint32_t x, uint32_t y) {
-  return g == NULL || player == 0 || player > (g -> players) ||
+  return g == NULL || player == 0 || player > (g->players) ||
          (! is_addr_correct(g, x, y)) ||
-         g -> board[get_position(g, x, y)] != 0;
+         g->board[get_position(g, x, y)] != 0;
 }
 
 
 bool too_many_areas (gamma_t *g, uint32_t player, uint32_t x, uint32_t y) {
-  return g -> player_areas[player - 1] == g -> max_areas && ! is_adjacent(g, player, x, y);
+  return g->player_areas[player - 1] == g->max_areas && !is_adjacent(g, player, x, y);
 }
