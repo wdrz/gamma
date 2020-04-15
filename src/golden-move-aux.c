@@ -135,7 +135,7 @@ uint16_t crumbles_to_how_many_parts(uint32_t x, uint32_t y, uint64_t flag) {
   uint16_t i, result = 0;
   BOARD->board[get_position(BOARD, x, y)] = 0;
   for (i = 0; i < 4; i++)
-    if (is_nth_neighbour_adjacent(BOARD, i, OWNER, x, y) &&
+    if (has_nth_neighbour_is_eq(BOARD, OWNER, i, x, y) &&
         BOARD->dsu[nth_neighbours_pos(BOARD, i, x, y)] != flag) {
       result++;
       search(flag, OWNER, x + X[i], y + Y[i]);
@@ -162,7 +162,7 @@ bool can_be_divided(uint32_t whose_area, uint16_t pieces) {
 void fix_after_search_when_divides(uint32_t x, uint32_t y, uint64_t flag) {
   uint16_t i;
   for (i = 0; i < 4; i++)
-    if (is_nth_neighbour_adjacent(BOARD, i, OWNER, x, y) &&
+    if (has_nth_neighbour_is_eq(BOARD, OWNER, i, x, y) &&
         BOARD->dsu[nth_neighbours_pos(BOARD, i, x, y)] == flag)
           search(nth_neighbours_pos(BOARD, i, x, y), OWNER, x + X[i], y + Y[i]);
 }
@@ -179,7 +179,7 @@ void fix_after_search_when_divides(uint32_t x, uint32_t y, uint64_t flag) {
 void fix_when_too_many_parts(uint32_t x, uint32_t y, uint64_t flag) {
   BOARD->board[get_position(BOARD, x, y)] = OWNER;
   BOARD->dsu[get_position(BOARD, x, y)] = flag;
-  search (get_position(BOARD, x, y), OWNER, x, y);
+  search(get_position(BOARD, x, y), OWNER, x, y);
   BOARD->dsu[get_position(BOARD, x, y)] = get_position(BOARD, x, y);
 }
 

@@ -1,7 +1,8 @@
 #include "basic_manipulations.h"
 
-int X[8] = {-1, 0, 1,  0, -1, 1,  1, -1};
-int Y[8] = { 0, 1, 0, -1,  1, 1, -1, -1};
+/// Liczby, które należy dodać do współrzędnych, aby przejść do sąsiada
+static int X[8] = {-1, 0, 1,  0, -1, 1,  1, -1};
+static int Y[8] = { 0, 1, 0, -1,  1, 1, -1, -1};
 
 bool is_addr_correct(gamma_t *g, uint32_t x, uint32_t y) {
   return x < (g->width) && y < (g->height);
@@ -40,6 +41,7 @@ bool is_adjacent (gamma_t *g, uint32_t player, uint32_t x, uint32_t y) {
     if (has_nth_neighbour(g, i, x, y))
       if (nth_neighbours_val(g, i, x, y) == player)
         return true;
+
   return false;
 }
 
