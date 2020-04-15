@@ -1,19 +1,22 @@
 #include <stdlib.h>
 #include "gamma-move-aux.h"
 
-bool table_contains (uint64_t arr[], uint64_t val, uint16_t arr_len) {
+bool table_contains(uint64_t arr[], uint64_t val, uint16_t arr_len) {
   uint16_t i;
   for (i = 0; i < arr_len; i++)
     if (arr[i] == val)
       return false;
+
   return true;
 }
 
 void update_length_of_gamma_board(gamma_t *g, uint32_t old, uint32_t new) {
   uint16_t old_len = how_many_digits(old), new_len = how_many_digits(new);
   g->legthOfString += new_len - old_len;
+
   if (old_len > 1 && new_len == 1) {
     g->legthOfString -= 2;
+
   } else if (old_len == 1 && new_len > 1) {
     g->legthOfString += 2;
   }
@@ -22,17 +25,21 @@ void update_length_of_gamma_board(gamma_t *g, uint32_t old, uint32_t new) {
 void update_dsu_and_areas (gamma_t *g, uint32_t player, uint32_t x, uint32_t y) {
   uint64_t prev_areas[4], curr_area;
   uint16_t i, prev_areas_len = 0;
+
   for (i = 0; i < 4; i++)
     if (has_nth_neighbour(g, i, x, y) &&
         nth_neighbours_val(g, i, x, y) == player) {
+
           curr_area = find(g, nth_neighbours_pos(g, i, x, y));
           if (table_contains(prev_areas, curr_area, prev_areas_len)) {
             prev_areas[prev_areas_len] = curr_area;
+
             if (prev_areas_len > 0)
               g -> dsu[curr_area] = prev_areas[0];
             prev_areas_len++;
           }
     }
+
   if (prev_areas_len > 0)
     g -> dsu[get_position(g, x, y)] = prev_areas[0];
   else
@@ -44,12 +51,15 @@ void update_dsu_and_areas (gamma_t *g, uint32_t player, uint32_t x, uint32_t y) 
 void update_adjacency (gamma_t *g,  uint32_t player, uint32_t x, uint32_t y) {
   uint16_t i;
   for (i = 0; i < 4; i++) {
+
     if (! has_nth_neighbour(g, i, x, y)) continue;
+
     if (nth_neighbours_val(g, i, x, y) == 0) {
-      if (! is_adjacent(g, player, x + X[i], y + Y[i]))
-        g->player_adjacent[player - 1] ++;
+      if (! is_nth_neighbour_adjacent(g, i, player, x, y))
+        g->player_adjacent[player - 1]++;
+
     } else if (! scan_neighbours(g, i, nth_neighbours_val(g, i, x, y), x, y)) {
-      g->player_adjacent[nth_neighbours_val(g, i, x, y) - 1] --;
+      g->player_adjacent[nth_neighbours_val(g, i, x, y) - 1]--;
     }
   }
 }

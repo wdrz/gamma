@@ -1,12 +1,17 @@
+/** @file
+ * Implementacja części funkcji silnika gry gamma
+ */
+
+
 # include <stdio.h>
 # include <stdbool.h>
 # include <stdint.h>
 # include <stdlib.h>
-
 # include "gamma.h"
 # include "basic_manipulations.h"
 # include "gamma-move-aux.h"
 # include "basic_manipulations.h"
+
 
 void gamma_delete(gamma_t *g) {
   if (g == NULL) return;
@@ -18,6 +23,7 @@ void gamma_delete(gamma_t *g) {
   free (g->player_golden_used);
   free (g);
 }
+
 
 gamma_t* gamma_new(uint32_t width, uint32_t height, uint32_t players, uint32_t areas) {
     if (width == 0 || height == 0 || players == 0 || areas == 0)
@@ -60,7 +66,6 @@ bool gamma_move(gamma_t *g, uint32_t player, uint32_t x, uint32_t y) {
   g->player_fields[player - 1]++;
   g->empty_fields--;
   update_length_of_gamma_board(g, 0, player);
-  //gamma_debug(g);
 
   return true;
 }
@@ -80,12 +85,6 @@ bool gamma_golden_possible(gamma_t *g, uint32_t player) {
   return (! g->player_golden_used[player - 1]) &&
     ((g->width * g->height) - (g->empty_fields) -
     (g->player_fields[player - 1]) > 0);
-}
-
-void write_number(uint32_t number, char *where) {
-  *where = '0' + (number % 10);
-  if (number >= 10)
-    write_number(number / 10, where - 1);
 }
 
 char* gamma_board(gamma_t *g) {

@@ -10,8 +10,24 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-extern int X[], Y[];
-
+/** @brief Struktura przechowująca stan gry gamma
+ * @dsu               - dla każdego pola trzyma jego następnik w
+ *                      implementacji struktury zbiorów rozłącznych,
+ * @board             - dla każdego pola trzyma numer gracza do
+ *                      którego to pole należy lub 0 jeśli jest to puste pole,
+ * @player_fields     - dla każdego gracza trzyma liczbę zajętych przez niego pól,
+ * @player_areas      - dla każdego gracza trzyma liczbę jego obszarów na planszy,
+ * @player_adjacent   - dla każdego gracza trzyma liczbę pól niczyich sąsiadujących
+ *                    - z polami tego gracza,
+ * @players           - liczba graczy,
+ * @width             - szerokość planszy,
+ * @height            - wysokość planszy,
+ * @max_areas         - maksymalna liczba obszarów,
+ * @empty_fields      - liczba pustych pól na planszy,
+ * @legthOfString     - długość łańcucha znaków, w którym można wypisać stan planszy,
+ * @player_golden_used- dla każdego gracza trzyma infromację czy wykorzystał już
+ *                      swój złoty ruch.
+ */
 struct gamma {
   uint64_t *dsu;
   uint32_t *board;
@@ -24,12 +40,14 @@ struct gamma {
 
 typedef struct gamma gamma_t;
 
-bool is_addr_correct (gamma_t *g, uint32_t x, uint32_t y);
+
+/** Sprawdza czy @x i @y to poprawne współrzędne pola na planszy @g */
+bool is_addr_correct(gamma_t *g, uint32_t x, uint32_t y);
 
 
-/** @brief Zwraca numer pola zadanego przez wspolrzedne.
+/** @brief Zwraca pozycję w tablicy pola zadanego przez wspolrzedne.
  * Zwraca liczbę za pomocą której można odwoływać się do pola (@x, @y)
- * z strukturze gamma.
+ * z tablicach trzymających informacje o poszczególnych polach w strukturze gamma.
  * Zakłada, że dane wejściowe są poprawne.
  * @param[in,out] g   – wskaźnik na strukturę przechowującą stan gry,
  * @param[in] x       – numer kolumny, liczba nieujemna mniejsza od wartości
@@ -37,38 +55,60 @@ bool is_addr_correct (gamma_t *g, uint32_t x, uint32_t y);
  * @param[in] y       – numer wiersza, liczba nieujemna mniejsza od wartości
  *                      @p height z funkcji @ref gamma_new.
  */
-uint64_t get_position (gamma_t *g, uint32_t x, uint32_t y);
+uint64_t get_position(gamma_t *g, uint32_t x, uint32_t y);
 
 
-/** @brief Zwraca reprezentatnta pola.
- * Zwraca reprezentatnta pola.
+/** Zwraca reprezentatnta pola w strukturze dsu pól planszy
  */
-uint64_t find (gamma_t *g, uint64_t position);
+uint64_t find(gamma_t *g, uint64_t position);
+
+
+
+/** Zwraca numer gracza do którego należy @n-ty sąsied pola (@x, @y)
+ * Zwraca 0 jeśli sąsiad jest pustym polem. Zakłada, że dane są poprawne
+ */
+uint32_t nth_neighbours_val(gamma_t *g, uint16_t n, uint32_t x, uint32_t y);
+
+/** Zwraca pozycję w tablicy @n-tego sąsiada pola (@x, @y). Zakłada, że dane są poprawne
+ */
+uint32_t nth_neighbours_pos(gamma_t *g, uint16_t n, uint32_t x, uint32_t y);
+
+/** Sprawdza, czy pole (@x, @y) ma @n-tego sąsiada. Zakłada, że dane są poprawne
+ */
+bool has_nth_neighbour(gamma_t *g, uint16_t n, uint32_t x, uint32_t y);
 
 /** @brief Sprawdza, czy pole sąsiaduje z polem gracza.
- * Jesli pole (x, y) nie sasiaduje z polem gracza zwraca 0.
- * W przeciwnym przypadku zwraca reprezentanta jednego z nich */
-bool is_adjacent (gamma_t *g, uint32_t player, uint32_t x, uint32_t y);
-
-/** @brief Zwraca numer gracza do którego należy @n-ty sąsied pola.
- * n = 0, 1, 2, 3.
+ * @return true jesli pole (@x, @y) sasiaduje z polem gracza @player, false
+ * w przeciwnym przypadku.
  */
-uint32_t nth_neighbours_val (gamma_t *g, uint16_t n, uint32_t x, uint32_t y);
+bool is_adjacent(gamma_t *g, uint32_t player, uint32_t x, uint32_t y);
 
-uint32_t nth_neighbours_pos (gamma_t *g, uint16_t n, uint32_t x, uint32_t y);
+/** @brief Sprawdza, czy pole ma sąsiada i czy należy on do gracza @n
+ * @return true jesli @n-ty sąsiad pola (@x, @y) istnieje i należy do
+ * gracza @value, false w przeciwnym przypadku.
+ */
+bool has_nth_neighbour_is_eq(gamma_t *g, uint64_t value, uint16_t n, uint32_t x, uint32_t y);
 
-bool has_nth_neighbour (gamma_t *g, uint16_t n, uint32_t x, uint32_t y);
-
-/** @brief ...
- * Sprawdza, czy przynajmniej jeden z sąsiadów 0, ..., n - 1 pola [x, y]
- * należy do gracza value.
+/**
+ * Sprawdza, czy przynajmniej jeden z sąsiadów pola (@x, @y) o numerach
+ * 0, ..., @n - 1 należy do gracza @value
  */
 bool scan_neighbours (gamma_t *g, uint16_t n, uint64_t value, uint32_t x, uint32_t y);
 
-bool has_nth_neighbour_is_eq (gamma_t *g, uint64_t value, uint16_t n, uint32_t x, uint32_t y);
+/**
+ * Sprawdza, czy @n-ty sąsiad pola (@x, @y) sąsiaduje z polem należącym do gracza @value
+ */
+bool is_nth_neighbour_adjacent(gamma_t *g, uint16_t n, uint32_t value, uint32_t x, uint32_t y);
 
-bool if_corr_is_eq (gamma_t *g, uint32_t player, uint32_t x, uint32_t y);
-
+/**
+ * Zwraca liczbę cyfr w dziesiętnym zapisie liczby @number
+ */
 uint16_t how_many_digits (uint32_t number);
+
+/**
+ * Wpisuje liczbę @number jako łańcuch znaków do stringa, którego @where
+ * jest wskaźnikiem na koniec
+ */
+void write_number(uint32_t number, char *where);
 
 #endif
