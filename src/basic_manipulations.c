@@ -18,7 +18,7 @@ uint64_t get_position(gamma_t *g, uint32_t x, uint32_t y) {
   return (g->width * y) + x;
 }
 
-uint64_t find (gamma_t *g, uint64_t position) {
+uint64_t find(gamma_t *g, uint64_t position) {
   uint64_t* zawartosc = g -> dsu + position;
   if (*zawartosc == position) {
     return position;
@@ -29,11 +29,11 @@ uint64_t find (gamma_t *g, uint64_t position) {
   }
 }
 
-uint32_t nth_neighbours_val (gamma_t *g, uint16_t n, uint32_t x, uint32_t y) {
+uint32_t nth_neighbours_val(gamma_t *g, uint16_t n, uint32_t x, uint32_t y) {
   return g -> board[get_position(g, x + X[n], y + Y[n])];
 }
 
-uint32_t nth_neighbours_pos (gamma_t *g, uint16_t n, uint32_t x, uint32_t y) {
+uint32_t nth_neighbours_pos(gamma_t *g, uint16_t n, uint32_t x, uint32_t y) {
   return get_position(g, x + X[n], y + Y[n]);
 }
 
@@ -41,7 +41,7 @@ bool has_nth_neighbour(gamma_t *g, uint16_t n, uint32_t x, uint32_t y) {
   return is_addr_correct(g, x + X[n], y + Y[n]);
 }
 
-bool is_adjacent (gamma_t *g, uint32_t player, uint32_t x, uint32_t y) {
+bool is_adjacent(gamma_t *g, uint32_t player, uint32_t x, uint32_t y) {
   uint32_t i;
   for (i = 0; i < 4; i++)
     if (has_nth_neighbour(g, i, x, y))
@@ -65,10 +65,10 @@ bool scan_neighbours(gamma_t *g, uint16_t n, uint64_t value, uint32_t x, uint32_
 }
 
 bool is_nth_neighbour_adjacent(gamma_t *g, uint16_t n, uint32_t value, uint32_t x, uint32_t y) {
-  return is_adjacent (g, value, x + X[n], y + Y[n]);
+  return is_adjacent(g, value, x + X[n], y + Y[n]);
 }
 
-uint16_t how_many_digits (uint32_t number) {
+uint16_t how_many_digits(uint32_t number) {
   if (number <= 9) return 1;
   else return how_many_digits(number / 10) + 1;
 }
