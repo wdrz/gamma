@@ -1,6 +1,17 @@
+/** @file
+ * Implementacja funcji pomocniczych do gamma_move
+ */
+
 #include <stdlib.h>
 #include "gamma-move-aux.h"
 
+/** @brief Sprawdza czy tablica zawiera liczbę
+ * Sprawdza, czy w tablicy @p arr o długości @p arr_len występuje wartość @p val.
+ * @param[in] arr     – tablica z danymi,
+ * @param[in] val     – wartość której szukamy w tablicy,
+ * @param[in] arr_len – długość tablicy @p arr.
+ * @return true jeśli występuje, false jeśli nie
+ */
 bool table_contains(uint64_t arr[], uint64_t val, uint16_t arr_len) {
   uint16_t i;
   for (i = 0; i < arr_len; i++)

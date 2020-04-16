@@ -17,8 +17,6 @@
  */
 typedef struct gamma gamma_t;
 
-void gamma_debug(gamma_t *g);
-
 /** @brief Tworzy strukturę przechowującą stan gry.
  * Alokuje pamięć na nową strukturę przechowującą stan gry.
  * Inicjuje tę strukturę tak, aby reprezentowała początkowy stan gry.

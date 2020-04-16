@@ -1,7 +1,13 @@
+/** @file
+ * Implementacja prostych funkcji
+ */
+
 #include "basic_manipulations.h"
 
-/// Liczby, które należy dodać do współrzędnych, aby przejść do sąsiada
+/// Tabela różnic pierwszych wpółrzędnych pomiędzy dowolnym polem, a jego i-tym sąsiadem
 static int X[8] = {-1, 0, 1,  0, -1, 1,  1, -1};
+
+/// Tabela różnic drugich wpółrzędnych pomiędzy dowolnym polem, a jego i-tym sąsiadem
 static int Y[8] = { 0, 1, 0, -1,  1, 1, -1, -1};
 
 bool is_addr_correct(gamma_t *g, uint32_t x, uint32_t y) {

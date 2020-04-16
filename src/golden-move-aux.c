@@ -1,26 +1,28 @@
 /** @file
- * Implementacja funkcji gamma_golden_move i wszystkich potrzebnych funkcji pomocniczych
+ * Implementacja złotego ruchu
  */
 
 #include <stdlib.h>
 #include "golden-move-aux.h"
 #include "gamma-move-aux.h"
 
-/// Pozycja w tablicy pola, które pojawiło się w zapytaniu o złoty ruch (dekl. w golden_move)
+/// Pozycja w tablicy pola, które pojawiło się w zapytaniu o złoty ruch (inicjowana w @ref gamma_golden_move)
 static uint64_t POSITION;
 
-/// Gracz, który wykonuje złoty ruch, zmienna inicjowana w funkcji golden_move
+/// Numer gracza, który wykonuje złoty ruch, zmienna inicjowana w funkcji @ref gamma_golden_move
 static uint32_t PLAYER;
 
-/// Właściciel pola na które @PLAYER chce wykonać złoty ruch (dekl. w golden_move)
+/// Właściciel pola na które PLAYER chce wykonać złoty ruch (inicjowana w @ref gamma_golden_move)
 static uint32_t OWNER;
 
-/// Zmienna globalna inicjowana w funkcji golden_move, przechowuje planszę do gry gamma
+/// Stan gry gamma, zmienna inicjowana w funkcji @ref gamma_golden_move
 static gamma_t *BOARD;
 
-/// Liczby, które należy dodać do współrzędnych, aby przejść do sąsiada
-static int X[8] = {-1, 0, 1,  0, -1, 1,  1, -1};
-static int Y[8] = { 0, 1, 0, -1,  1, 1, -1, -1};
+/// Tabela różnic pierwszych wpółrzędnych pomiędzy dowolnym polem, a jego i-tym sąsiadem
+static const int X[8] = {-1, 0, 1,  0, -1, 1,  1, -1};
+
+/// Tabela różnic drugich wpółrzędnych pomiędzy dowolnym polem, a jego i-tym sąsiadem
+static const int Y[8] = { 0, 1, 0, -1,  1, 1, -1, -1};
 
 /** @brief Zmienia parametry pojedynczego pola przy wykonaniu złotego ruchu
  * Aktualizuje liczności pól graczy oraz ustawia pole na należące do
@@ -35,14 +37,14 @@ void mod_field_count () {
   update_length_of_gamma_board(BOARD, OWNER, PLAYER);
 }
 
-/** @brief Sprawdza czy pole jest otoczone przez pola gracza @OWNER.
- * Sprawdza czy pole (@x, @y) jest otoczone przez pola gracza @OWNER.
+/** @brief Sprawdza czy pole jest otoczone przez pola gracza #OWNER.
+ * Sprawdza czy pole (@p x, @p y) jest otoczone przez pola gracza #OWNER.
  * @param[in] x       – numer kolumny, liczba nieujemna mniejsza od wartości
  *                      @p width z funkcji @ref gamma_new,
  * @param[in] y       – numer wiersza, liczba nieujemna mniejsza od wartości
  *                      @p height z funkcji @ref gamma_new.
  * @return true jeśli wszystie pola stykające się bokami lub rogami z polem
- * (@x, @y) należą do gracza @PLAYER, false w przeciwnym przypadku
+ * (@p x, @p y) należą do gracza #PLAYER, false w przeciwnym przypadku
  */
 uint64_t in_the_middle_of_territory(uint32_t x, uint32_t y) {
   uint16_t i;
@@ -57,8 +59,8 @@ uint64_t in_the_middle_of_territory(uint32_t x, uint32_t y) {
 }
 
 
-/** @brief Sprawdza, czy argumenty golden_move są NIEpoprawne.
- * Wstępnie waliduje wejście funkcji golden_move.
+/** @brief Sprawdza, czy argumenty @ref gamma_golden_move są niepoprawne.
+ * Wstępnie waliduje wejście funkcji @ref gamma_golden_move.
  * @param[in] x       – numer kolumny,
  * @param[in] y       – numer wiersza.
  * @return false jeśli gracz wskazał pole leżące na planszy należące do innego gracza,
@@ -71,19 +73,19 @@ bool gold_input_incorrect(uint32_t x, uint32_t y) {
          BOARD->board[get_position(BOARD, x, y)] == PLAYER;
 }
 
-/** @brief Sprawdza czy plansza jest zdegenerowana.
- * @return true jeśli któryś z wymiarów planszy @BOARD jest równy 1, false jeśli nie
+/** Sprawdza czy plansza jest zdegenerowana.
+ * @return true jeśli któryś z wymiarów planszy #BOARD jest równy 1, false jeśli nie
  */
 bool is_degenerated() {
   return BOARD->width == 1 || BOARD->height == 1;
 }
 
 /** @brief Aktualizuje liczby pól sąsiadujacych z obszarami graczy
- * Zabranie pola (@x, @y) graczowi @OWNER, przez gracza @PLAYER
- * sprawia, że część pól sąsiadujących z (@x, @y) może zacząć graniczyć
- * z obszarem gracza @PLAYER i przestać z gracza @OWNER. Funkcja odpowiednio
+ * Zabranie pola (@p x, @p y) graczowi #OWNER, przez gracza #PLAYER
+ * sprawia, że część pól sąsiadujących z (@p x, @p y) może zacząć graniczyć
+ * z obszarem gracza #PLAYER i przestać z gracza #OWNER. Funkcja odpowiednio
  * modyfikuje te wartości dla obu graczy. UWAGA! zakłada, że właściciel pola
- * (@x, @y) jest tymczasowo ustawiony na 0.
+ * (@p x, @p y) jest tymczasowo ustawiony na 0.
  * @param[in] x       – poprawny numer kolumny,
  * @param[in] y       – poprawny numer wiersza.
  */
@@ -100,8 +102,8 @@ void change_adjacency(uint32_t x, uint32_t y) {
 
 
 /** @brief Przechodzi rekurencyjnie planszę do gry gamma
- * Przechodzi po obszarze do którego należy pole (@x, @y) gracza @value.
- * Następnik w dsu każdego odwiedzonego wierzchołka ustawia na @flag.
+ * Przechodzi po obszarze do którego należy pole (@p x, @p y) gracza @p value.
+ * Następnik w dsu każdego odwiedzonego wierzchołka ustawia na @p flag.
  * @param[in] flag    – flaga służąca do oznaczania odwiedzonych pól. Przy
  *                      jej pomocy oznaczamy następnika w dsu odwiedzonych pól.
  *                      Ważne jest, aby używać takiej flagi, która nie występuje
@@ -120,12 +122,12 @@ void search(uint64_t flag, uint32_t value, uint32_t x, uint32_t y) {
 }
 
 /** @brief Zwraca liczbę obszarów na ile rozpada się obszar po zabraniu pola
- * Zwraca liczbę obszarów na ile rozpadłby się ten obszar gracza @OWNER do
- * w którym znajduje się pole (@x, @y) gdyby pole (@x, @y) przestało należeć
+ * Zwraca liczbę obszarów na ile rozpadłby się ten obszar gracza #OWNER do
+ * w którym znajduje się pole (@p x, @p y) gdyby pole (@p x, @p y) przestało należeć
  * do tego gracza. Funkcja modyfikuje stan gry gamma: ustawia następnik wszystkich
- * pól leżących w tym samym obszarze gracza @PLAYER na @flag
+ * pól leżących w tym samym obszarze gracza #PLAYER na @p flag
  * @param[in] flag    – liczba taka, że nie istnieje pole należące do tego samego
- *                      obszaru gracza @OWNER co (@x, @y) takie, że jego następnik
+ *                      obszaru gracza #OWNER co (@p x, @p y) takie, że jego następnik
  *                      w strukturze dsu jest ustwiony na flag,
  * @param[in] x       – poprawny numer kolumny,
  * @param[in] y       – poprawny numer wiersza.
@@ -144,7 +146,7 @@ uint16_t crumbles_to_how_many_parts(uint32_t x, uint32_t y, uint64_t flag) {
 }
 
 /** @brief Sprawdza, czy obszar nie rozpada sie na nielegalnie wiele części
- * Sprawdza, czy gracz @whose_area może mieć @pieces obszarów więcej i
+ * Sprawdza, czy gracz @p whose_area może mieć @p pieces obszarów więcej i
  * czy nie przekroczy w ten sposób maksymalnej liczby obszarów.
  * @return true jeśli nie przekroczy, false jeśli przekroczy
  */
@@ -153,7 +155,7 @@ bool can_be_divided(uint32_t whose_area, uint16_t pieces) {
 }
 
 /** @brief Modyfikuje dsu tak aby zapamiętać rozpad obszaru.
- * Przechodzi po oflagowanych (@flag) polach gracza @OWNER i ustawia następniki
+ * Przechodzi po oflagowanych (@p flag) polach gracza #OWNER i ustawia następniki
  * tych pól w dsu tak, aby oddawały zachodzący właśnie podział obszaru
  * @param[in] flag    – flaga
  * @param[in] x       – poprawny numer kolumny,
@@ -168,10 +170,10 @@ void fix_after_search_when_divides(uint32_t x, uint32_t y, uint64_t flag) {
 }
 
 /** @brief Modyfikuje dsu tak, aby wycofać się rozkładania obszaru na części
- * Przechodzi po tym obszarze gracza @OWNER do którego należy pole (@x, @y)
- * i ustawia następniki tych pól w dsu na pole (@x, @y).
- * Zakłada, że każde z pól tego obszaru jest oflagowane (@flag) oraz że @flag nie
- * jest pozycją pola (@x, @y).
+ * Przechodzi po tym obszarze gracza #OWNER do którego należy pole (@p x, @p y)
+ * i ustawia następniki tych pól w dsu na pole (@p x, @p y).
+ * Zakłada, że każde z pól tego obszaru jest oflagowane (@p flag) oraz że @p flag nie
+ * jest pozycją pola (@p x, @p y).
  * @param[in] flag    – flaga
  * @param[in] x       – poprawny numer kolumny,
  * @param[in] y       – poprawny numer wiersza.
@@ -186,7 +188,7 @@ void fix_when_too_many_parts(uint32_t x, uint32_t y, uint64_t flag) {
 /** @brief Decyduje czy można podzielić obszar i go dzieli
  * Przeprowadza lub nie przeprowadza złotego ruchu
  * @param[in] flag    – pewna liczba, o której wiadomo, że żadne pole gracza
- *                      @OWNER nie ma ustawionego następnika w dsu na tą liczbę
+ *                      #OWNER nie ma ustawionego następnika w dsu na tą liczbę
  * @param[in] x       – poprawny numer kolumny,
  * @param[in] y       – poprawny numer wiersza.
  * @return true jeśli wykonano złoty ruch, false jeśli wykonanie złotego
