@@ -17,9 +17,11 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "interactive-mode.h"
+
 /**
  * Tak ma wyglądać plansza po wykonaniu wszystkich testów.
- */
+ */ /*
 static const char board[] =
   "1.........\n"
   "..........\n"
@@ -30,7 +32,7 @@ static const char board[] =
   "..........\n"
   "1.........\n"
   "1221......\n"
-  "1.........\n";
+  "1.........\n";*/
 
 /** @brief Testuje silnik gry gamma.
  * Przeprowadza przykładowe testy silnika gry gamma.
@@ -38,13 +40,18 @@ static const char board[] =
  * a w przeciwnym przypadku kod zakończenia programu jest kodem błędu.
  */
 int main() {
+
+
   gamma_t *g;
 
-  g = gamma_new(0, 0, 0, 0);
-  assert(g == NULL);
+  /*g = gamma_new(0, 0, 0, 0);
+  assert(g == NULL);*/
 
   g = gamma_new(10, 10, 2, 3);
-  assert(g != NULL);
+
+  run_interactive_mode(g);
+
+  /*assert(g != NULL);
 
   assert(gamma_move(g, 1, 0, 0));
   assert(gamma_busy_fields(g, 1) == 1);
@@ -91,7 +98,7 @@ int main() {
   assert(p);
   assert(strcmp(p, board) == 0);
   printf(p);
-  free(p);
+  free(p);*/
 
   gamma_delete(g);
   return 0;
