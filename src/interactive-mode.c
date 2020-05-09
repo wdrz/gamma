@@ -24,8 +24,14 @@ static const int X[4] = {-1, 0, 1,  0};
 /// Tabela różnic drugich wpółrzędnych pomiędzy dowolnym polem, a jego i-tym sąsiadem
 static const int Y[4] = { 0, 1, 0, -1};
 
-void move_to_right_position() {
+static inline void move_to_right_position() {
   wmove(GAME_WINDOW, BOARD->height - 1 - CURRENT_Y, CURRENT_X);
+}
+
+char player_character(uint32_t player) {
+  if (player <= 9) return '0' + player;
+  if (player <= 35) return 'A' + (player - 10);
+  else return '?';
 }
 
 void if_has_neighbour_move(uint16_t n) {
@@ -50,14 +56,14 @@ void init_ncurses() {
 
 void draw_board() {
   uint16_t i, j;
-  uint32_t board_field;
+  uint32_t owner;
   for (j = 0; j < BOARD->height; j++)
     for (i = 0; i < BOARD->width; i++) {
-      board_field = BOARD->board[get_position(BOARD, i, j)];
-      if (board_field == 0) {
+      owner = BOARD->board[get_position(BOARD, i, j)];
+      if (owner == 0) {
         mvwaddch(GAME_WINDOW, BOARD->height - 1 - j, i, '.');
       } else {
-        mvwaddch(GAME_WINDOW, BOARD->height - 1 - j, i, '0' + board_field);
+        mvwaddch(GAME_WINDOW, BOARD->height - 1 - j, i, player_character(owner));
       }
     }
   move_to_right_position();
@@ -103,20 +109,24 @@ void next_player() {
   draw_footer();
 }
 
-// TODO
+// TODO !!!!
 bool is_it_the_end() {
+
   return false;
 }
 
 void finish() {
+  uint32_t i;
   char *result = gamma_board(BOARD);
   endwin();
   printf("%s", result);
   free(result);
-  // jeszcze jakies podsumowania !!!
+  for (i = 1; i <= BOARD->players; i++) {
+    printf("PLAYER %u %lu\n", i, gamma_busy_fields(BOARD, i));
+  }
 }
 
-int run_interactive_mode(gamma_t *g) {
+void run_interactive_mode(gamma_t *g) {
   BOARD = g;
   int ch;
 
@@ -136,7 +146,7 @@ int run_interactive_mode(gamma_t *g) {
   for (;;) {
     if (is_it_the_end()) {
       finish();
-      return 0;
+      return;
     }
     ch = getch();
     switch (ch) {
@@ -161,7 +171,7 @@ int run_interactive_mode(gamma_t *g) {
         break;
       case 4:
         finish();
-        return 0;
+        return;
         break;
       case 'c':
       case 'C':
@@ -178,5 +188,4 @@ int run_interactive_mode(gamma_t *g) {
     }
   }
   endwin();
-  return 0;
 }

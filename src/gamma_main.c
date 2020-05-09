@@ -1,13 +1,14 @@
 #include "gamma.h"
 #include "interactive-mode.h"
+#include "batch-mode.h"
 #include "read-input.h"
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-inline bool starts_a_mode(Line *line) {
-  return line->flag == OK && line->number_of_parameters == 4 &&
+static inline bool starts_a_mode(Line *line) {
+  return line->flag == OK && line->number_of_params == 4 &&
      (line->command == 'I' || line->command == 'B');
 }
 
@@ -17,22 +18,22 @@ bool try_to_start_mode(Line *line) {
     return false;
 
   if (!starts_a_mode(line)) {
-    printf("ERROR %u\n", line->line_number);
+    print_error(line);
     return false;
   }
 
   gamma_t *g;
-  g = gamma_new(line->parameters[0], line->parameters[1],
-    line->parameters[2], line->parameters[3]);
+  g = gamma_new(line->param[0], line->param[1], line->param[2], line->param[3]);
 
   if (g == NULL) {
-    printf("ERROR %u\n", line->line_number);
+    print_error(line);
     return false;
   }
   if (line->command == 'I') {
     run_interactive_mode(g);
   } else {
-    printf("RUN BATCH MODE\n");
+    printf("OK %d\n", line->line_number);
+    run_batch_mode(g);
   }
   gamma_delete(g);
   return true;
@@ -42,7 +43,7 @@ int main() {
   Line* line;
 
   if (!init_read_input()) {
-    // blad alokacja sie nie powiodla.
+    return 1;
   }
 
   do {

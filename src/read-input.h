@@ -12,8 +12,8 @@ enum Flag {IGN, ERR, OK, END, ERR_END};
 typedef struct line {
   enum Flag flag;
   char command;
-  uint64_t parameters[MAX_NUMBER_OF_PARAMETERS];
-  uint16_t number_of_parameters;
+  uint64_t param[MAX_NUMBER_OF_PARAMETERS];
+  uint16_t number_of_params;
   uint32_t line_number;
 } Line;
 

@@ -71,20 +71,28 @@ bool gamma_move(gamma_t *g, uint32_t player, uint32_t x, uint32_t y) {
 }
 
 uint64_t gamma_busy_fields(gamma_t *g, uint32_t player) {
-  return g->player_fields[player - 1];
+  if (g == NULL || player > g->players)
+    return 0;
+  else
+    return g->player_fields[player - 1];
 }
 
 uint64_t gamma_free_fields(gamma_t *g, uint32_t player) {
-  if (g->player_areas[player - 1] < g -> max_areas)
+  if (g == NULL || player > g->players)
+    return 0;
+  else if (g->player_areas[player - 1] < g -> max_areas)
     return g->empty_fields;
   else
     return g->player_adjacent[player - 1];
 }
 
 bool gamma_golden_possible(gamma_t *g, uint32_t player) {
-  return (! g->player_golden_used[player - 1]) &&
-    ((g->width * g->height) - (g->empty_fields) -
-    (g->player_fields[player - 1]) > 0);
+  if (g == NULL || player > g->players)
+    return false;
+  else
+    return (! g->player_golden_used[player - 1]) &&
+      ((g->width * g->height) - (g->empty_fields) -
+      (g->player_fields[player - 1]) > 0);
 }
 
 char* gamma_board(gamma_t *g) {

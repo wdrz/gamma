@@ -3,7 +3,6 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <ctype.h>
-
 #include "read-input.h"
 
 Line *CURRENT_LINE;
@@ -65,7 +64,7 @@ bool look_at_second_char() {
     CURRENT_LINE->flag = ERR_END;
     return false;
   } else if (second_char == '\n') {
-    CURRENT_LINE->number_of_parameters = 0;
+    CURRENT_LINE->number_of_params = 0;
     return false;
   } else if (isspace(second_char)) {
     return true;
@@ -117,7 +116,7 @@ void look_at_the_rest () {
         ignore_rest_on_error();
         return;
       }
-      CURRENT_LINE->parameters[which_number] = currently_considered_number;
+      CURRENT_LINE->param[which_number] = currently_considered_number;
     }
 
     character_on_input = getchar();
@@ -127,7 +126,7 @@ void look_at_the_rest () {
     CURRENT_LINE->flag = ERR_END;
   }
 
-  CURRENT_LINE->number_of_parameters = which_number + 1;
+  CURRENT_LINE->number_of_params = which_number + 1;
 
   // err jesli nie prawda ze juz same liczby i spacje       ok (chyba)
   // err jesli konczy sie EOFem zamiast \n-em               ok (chyba)
@@ -183,11 +182,11 @@ void display_line(Line* line) {
 
   if (line->flag == OK) {
     printf("command: %c, ", line->command);
-    printf("num of params: %u,  params: [", line->number_of_parameters);
-    for (i = 0;i < line->number_of_parameters; i++){
-        printf("%lu, ", line->parameters[i]);
+    printf("num of params: %u,  params: [", line->number_of_params);
+    for (i = 0;i < line->number_of_params; i++){
+        printf("%lu, ", line->param[i]);
     }
-    if (line->number_of_parameters == 0) printf("]");
+    if (line->number_of_params == 0) printf("]");
     else printf("\b\b]");
   }
 

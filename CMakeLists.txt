@@ -38,6 +38,8 @@ set(SOURCE_FILES
     src/interactive-mode.h
     src/read-input.c
     src/read-input.h
+    src/batch-mode.c
+    src/batch-mode.h
     )
 
 # Wskazujemy plik wykonywalny.
