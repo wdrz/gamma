@@ -8,7 +8,7 @@
 # include <stdlib.h>
 # include "basic_manipulations.h"
 
-/** @brief Uruchamia tryb interaktywny
+/** @brief Uruchamia tryb interaktywny.
 * Przeprowadza rozgrywkę gry gamma w trybie interaktywnym.
 * @param[in,out] g   - poprawny wskaźnik na strukturę przechowującą (początkowy) stan gry,
 */

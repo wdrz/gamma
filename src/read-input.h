@@ -9,7 +9,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-/* Maksymalna liczba parametrów które mogą pojawić się po komendzie w linii wejścia  */
+/** Maksymalna liczba parametrów które mogą pojawić się po komendzie w linii wejścia  */
 #define MAX_NUMBER_OF_PARAMETERS 4
 
 /** Typ mozliwych sygnalow wyslanych przez procedure wczytujaca linie. */
@@ -34,7 +34,7 @@ typedef struct line {
 extern bool init_read_input(void);
 
 
-/** @brief Czyta linię z wejścia
+/** @brief Czyta linię z wejścia.
  * Wczytuję następną linię znaków ze standardowego wejścia i wstępnie sprawdza jej popraność
  * Nie należy zwalniać pamięci pod adresem który zwraca dopóki pozostają na wejściu
  * niewczytane dane. Za zwolnienie pamięci odpowiada zewnętrzny moduł.

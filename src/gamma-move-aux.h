@@ -9,7 +9,7 @@
 #include <stdbool.h>
 #include "basic_manipulations.h"
 
-/** @brief Aktualizuje długość planszy jako łańcucha znaków
+/** @brief Aktualizuje długość planszy jako łańcucha znaków.
  * Jeśli pewne pole przechodzi na własność gracza @p new poprzednio należąc
  * do gracza @p old (lub 0 jeśli puste), aktualizuje odpowiednio długość łańcucha
  * znaków kodującego planszę.

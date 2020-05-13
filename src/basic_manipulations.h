@@ -112,7 +112,7 @@ static inline bool has_nth_neighbour(gamma_t *g, uint16_t n, uint32_t x, uint32_
 }
 
 
-/** @brief Sprawdza, czy pole (@p x, @p y) sąsiaduje z polem gracza @p player
+/** @brief Sprawdza, czy pole (@p x, @p y) sąsiaduje z polem gracza @p player.
  * @param[in] g        – wskaźnik na strukturę przechowującą stan gry,
  * @param[in] player   – numer gracza lub 0 (puste pole),
  * @param[in] x        – poprawny numer kolumny,
@@ -122,7 +122,7 @@ static inline bool has_nth_neighbour(gamma_t *g, uint16_t n, uint32_t x, uint32_
  */
 extern bool is_adjacent(gamma_t *g, uint32_t player, uint32_t x, uint32_t y);
 
-/** @brief Sprawdza, czy pole ma sąsiada i czy należy on do gracza @p value
+/** @brief Sprawdza, czy pole ma sąsiada i czy należy on do gracza @p value.
  * @param[in] g        – wskaźnik na strukturę przechowującą stan gry,
  * @param[in] value    – numer gracza lub 0 (puste pole),
  * @param[in] n        – numer sąsiada (liczba 0, 1, ..., 7) oznaczająca
@@ -168,7 +168,7 @@ static inline bool is_nth_neighbour_adjacent(gamma_t *g, uint16_t n, uint32_t va
 }
 
 
-/** Zwraca liczbę cyfr w dziesiętnym zapisie liczby @p number
+/** Zwraca liczbę cyfr w dziesiętnym zapisie liczby @p number.
  * @param[in] number     – liczba.
  * @return liczba cyfr w dziesiętnym zapisie liczby @p number
  */

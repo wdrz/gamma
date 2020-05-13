@@ -5,6 +5,9 @@
 #include <ctype.h>
 #include "read-input.h"
 
+/* maksymalna wartość uint32_t */
+#define MAX32 4294967295
+
 static Line *CURRENT_LINE;
 
 /* Ignoruje resztę linii. Dodatkowo, jeśli linia zawiera EOF zwraca true. Wpp zwraca false */
@@ -79,17 +82,15 @@ static bool look_at_second_char(void) {
 /* Do liczby *number dopisuje cyfrę digit. Zwraca true jesli operacja sie
  * powiodla, false wpp. Pozwalamy na zera wiodące. */
 static bool add_digit_to_number(uint32_t *number, char digit) {
-  uint32_t temp_number;
   if (digit > '9' || digit < '0')
     return false;
 
-  // patrzymy czy dodanie cyfry nie obróci uint32 (czyli czy liczba jest w zakresie)
-  temp_number = *number * 10 + (digit - '0');
-  if (temp_number < *number)
+  if (*number < MAX32 / 10 || (*number == MAX32 / 10 && digit - '0' <= MAX32 % 10)) {
+     *number = *number * 10 + (digit - '0');
+     return true;
+  } else {
     return false;
-
-  *number = temp_number;
-  return true;
+  }
 }
 
 /* Spogląda na resztę (od trzeciego) znaków w linii. Zakłada, że po przejrzeniu
