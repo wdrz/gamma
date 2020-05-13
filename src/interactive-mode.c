@@ -2,123 +2,118 @@
 #include "interactive-mode.h"
 #include "basic_manipulations.h"
 #include <stdio.h>
-#include <curses.h>
+#include <termios.h>
 #include <stdlib.h>
-#include <string.h>
 
-uint16_t FOOTER_WINDOW_LENGTH = 20;
+/* Pierwsza współrzędna obecnie zaznaczonego pola planszy do gry gamma */
+static uint32_t CURRENT_X = 0;
 
-uint32_t CURRENT_X = 0;
-uint32_t CURRENT_Y = 0;
+/* Druga współrzędna obecnie zaznaczonego pola planszy do gry gamma */
+static uint32_t CURRENT_Y = 0;
 
-gamma_t *BOARD;
+/* Stan gry gamma */
+static gamma_t *BOARD;
 
-WINDOW *GAME_WINDOW;
-WINDOW *FOOTER_WINDOW;
-
+/* Numer gracza, o którym oczekujemy że wykona ruch */
 static uint32_t PLAYER = 1;
 
-/// Tabela różnic pierwszych wpółrzędnych pomiędzy dowolnym polem, a jego i-tym sąsiadem
-static const int X[4] = {-1, 0, 1,  0};
+/* Ustawienia konsoli przed i po zainicjowaniu trybu interaktywnego */
+static struct termios OLD_SETTING, NEW_SETTING;
 
-/// Tabela różnic drugich wpółrzędnych pomiędzy dowolnym polem, a jego i-tym sąsiadem
-static const int Y[4] = { 0, 1, 0, -1};
-
-static inline void move_to_right_position() {
-  wmove(GAME_WINDOW, BOARD->height - 1 - CURRENT_Y, CURRENT_X);
+/* Przesuwa kursor w miejsce gdzie na konsoli wyświetla się pole CURRENT_X, CURRENT_Y */
+static inline void move_to_right_position(void) {
+  printf("\x1b[%d;%df", BOARD->height - CURRENT_Y, CURRENT_X + 1);
 }
 
-char player_character(uint32_t player) {
+/* Przesuwa kursor w lewy górny róg konsoli */
+static inline void goto_start_position(void) {
+  printf("\x1b[%d;%df", 1, 1);
+}
+
+/* Ustawia działanie konsoli */
+static void init_console(void) {
+  tcgetattr(0, &OLD_SETTING);          /* Pobierz stare ustawienia i/o terminala */
+  NEW_SETTING = OLD_SETTING;
+  NEW_SETTING.c_lflag &= ~ICANON;      /* wyłącz buforowanie znaków w linię */
+  NEW_SETTING.c_lflag &= ~ECHO;        /* wyłącz echo terminala */
+  tcsetattr(0, TCSANOW, &NEW_SETTING); /* użyj nowych ustawień terminala */
+  printf("\033[?1049h\033[H");         /* nowy bufor */
+}
+
+/* Zwraca symbol, który będzie reprezentował gracza player w trybie interaktywnym */
+static char player_character(uint32_t player) {
   if (player <= 9) return '0' + player;
   if (player <= 35) return 'A' + (player - 10);
   else return '?';
 }
 
-void if_has_neighbour_move(uint16_t n) {
-  if ((CURRENT_X == 0 && X[n] == -1) || (CURRENT_Y == 0 && Y[n] == -1) ||
-      CURRENT_X + X[n] >= BOARD->width || CURRENT_Y + Y[n] >= BOARD->height) {
+/* Przesuwa rozpatrywane pole w lewo, prawo, górę lub dół w zależności od
+ * podanego jako parametr numeru sąsiada. Jeśli przesunięcie nie jest możliwe,
+ * nie robi nic. */
+static void if_has_neighbour_move(uint16_t n) {
+  if ((CURRENT_X == 0 && X_DELTA[n] == -1) || (CURRENT_Y == 0 && Y_DELTA[n] == -1) ||
+      CURRENT_X + X_DELTA[n] >= BOARD->width || CURRENT_Y + Y_DELTA[n] >= BOARD->height) {
         return;
   }
-  CURRENT_X += X[n];
-  CURRENT_Y += Y[n];
+  CURRENT_X += X_DELTA[n];
+  CURRENT_Y += Y_DELTA[n];
   move_to_right_position();
-  wrefresh(GAME_WINDOW);
 }
 
-void init_ncurses() {
-  initscr();
-  cbreak(); // One-character-a-time: disable the buffering of typed characters
-  noecho(); // No echo: suppress the automatic echoing of typed characters
-  clear();
-  keypad(stdscr, TRUE); // Special keys: capture special keystrokes
-  refresh();
-}
-
-void draw_board() {
+/* Poczynając od lewego górnego rogu konsoli, rysuje planszę do gry gamma.
+ * zapisuje pozycję kursora, gdzie skończył */
+static void draw_board(void) {
   uint16_t i, j;
   uint32_t owner;
-  for (j = 0; j < BOARD->height; j++)
+  goto_start_position();
+  for (j = 0; j < BOARD->height; j++) {
     for (i = 0; i < BOARD->width; i++) {
       owner = BOARD->board[get_position(BOARD, i, j)];
       if (owner == 0) {
-        mvwaddch(GAME_WINDOW, BOARD->height - 1 - j, i, '.');
+        printf(".");
       } else {
-        mvwaddch(GAME_WINDOW, BOARD->height - 1 - j, i, player_character(owner));
+        printf("%c", player_character(owner));
       }
     }
-  move_to_right_position();
-}
-
-
-void draw_initial_board() {
-  GAME_WINDOW = newwin(BOARD->height, BOARD->width, 0, 0);
-  wmove(GAME_WINDOW, 0, 0);
-  wrefresh(GAME_WINDOW);
-  draw_board();
-  wrefresh(GAME_WINDOW);
-}
-
-void draw_footer() {
-  uint16_t i, length;
-  char str[FOOTER_WINDOW_LENGTH];
-  length = sprintf(str, "PLAYER %u %lu %lu %c", PLAYER,
-    gamma_busy_fields(BOARD, PLAYER), gamma_free_fields(BOARD, PLAYER),
-    gamma_golden_possible(BOARD, PLAYER) ? 'G' : ' ');
-  wmove(FOOTER_WINDOW, 0, 0);
-  for (i = 0; i < FOOTER_WINDOW_LENGTH; i++) {
-    if (i < length)
-      waddch(FOOTER_WINDOW, str[i]);
-    else
-      wdelch(FOOTER_WINDOW);
+    printf("\n");
   }
-
-  wrefresh(FOOTER_WINDOW);
-
+  printf("\x1b%d", 7); // zapisz pozycje kursora
   move_to_right_position();
-  wrefresh(GAME_WINDOW);
-
 }
 
-void draw_initial_footer() {
-  FOOTER_WINDOW = newwin(1, FOOTER_WINDOW_LENGTH, BOARD->height, 0);
-  draw_footer();
+/* W zapisanym przez funkcję draw_board miejscu wypisuje numer i informacje o graczu */
+static void draw_footer(void) {
+  printf("\x1b%d", 8);  /* Idź do zapisanej pozycji kursora */
+  printf("\x1b[%dK", 2); /* Wyczysc linie w ktorej znajduje się kursor */
+  printf("PLAYER %c %lu %lu %s", player_character(PLAYER),
+    gamma_busy_fields(BOARD, PLAYER), gamma_free_fields(BOARD, PLAYER),
+    gamma_golden_possible(BOARD, PLAYER) ? "G" : "");
+  move_to_right_position();
 }
 
-void next_player() {
-  PLAYER = (PLAYER % BOARD->players) + 1;
-  draw_footer();
-}
-
-// TODO !!!!
-bool is_it_the_end() {
-
+/* Przeskakuje do następnego gracza, który nadal może wykonać ruch i zwraca true.
+ * Jeśli takiego gracza nie ma, zwraca false */
+static bool next_player(void) {
+  uint16_t i, player;
+  for (i = 0; i < BOARD->players; i++) {
+    player = (PLAYER + i) % BOARD->players + 1;
+    if (gamma_free_fields(BOARD, player) != 0 || gamma_golden_possible(BOARD, player)) {
+      PLAYER = player;
+      draw_footer();
+      return true;
+    }
+  }
   return false;
 }
 
-void finish() {
+/* Kończy tryb interaktywny: wychodzi z bufora, wypisuje podsumowanie gry gamma */
+static void finish() {
   uint32_t i;
+  printf("\033[?1049l"); /* wyjdz z bufora */
   char *result = gamma_board(BOARD);
-  endwin();
+
+  tcsetattr(0, TCSANOW, &OLD_SETTING);
+
   printf("%s", result);
   free(result);
   for (i = 1; i <= BOARD->players; i++) {
@@ -126,48 +121,61 @@ void finish() {
   }
 }
 
+/* Aktualizuje wyświetlaną tablicę o ruch gracza PLAYER na pole CURRENT_X,
+ * CURRENT_Y. Zwraca true jeśli gra gamma powinna się zakończyć, false wpp */
+static bool display_move(void) {
+  printf("%c", player_character(PLAYER));
+  move_to_right_position();
+  if (!next_player()) {
+    finish();
+    return true;
+  }
+  return false;
+}
+
+/* Interpretuje drugi i trzeci znak ansi escape code'a: na ich podstawie określa
+ * czy naciśnięta zastała strzałka i jeśli tak to wywołuje odpowienią funkcję */
+static void handle_arrows() {
+  char ch;
+  getchar(); // pomin znak
+  ch = getchar();
+  switch (ch) {
+    case 'A': // GÓRA
+      if_has_neighbour_move(1);
+      break;
+    case 'B': // DÓŁ
+      if_has_neighbour_move(3);
+      break;
+    case 'C': // PRAWA
+      if_has_neighbour_move(2);
+      break;
+    case 'D': // LEWA
+      if_has_neighbour_move(0);
+      break;
+  }
+}
+
 void run_interactive_mode(gamma_t *g) {
   BOARD = g;
   int ch;
 
-  init_ncurses();
-
-  draw_initial_board();
-  draw_initial_footer();
-  refresh();
-
+  init_console();
+  draw_board();
+  draw_footer();
 
   CURRENT_X = BOARD->width / 2;
   CURRENT_Y = BOARD->height / 2;
   move_to_right_position();
-  wrefresh(GAME_WINDOW);
-
 
   for (;;) {
-    if (is_it_the_end()) {
-      finish();
-      return;
-    }
-    ch = getch();
+    ch = getchar();
     switch (ch) {
-      case KEY_UP:
-        if_has_neighbour_move(1);
-        break;
-      case KEY_DOWN:
-        if_has_neighbour_move(3);
-        break;
-      case KEY_LEFT:
-        if_has_neighbour_move(0);
-        break;
-      case KEY_RIGHT:
-        if_has_neighbour_move(2);
+      case '\033': // escape
+        handle_arrows();
         break;
       case ' ':
-        if (gamma_move(BOARD, PLAYER, CURRENT_X, CURRENT_Y)) {
-          draw_board();
-          wrefresh(GAME_WINDOW);
-          next_player();
-        }
+        if (gamma_move(BOARD, PLAYER, CURRENT_X, CURRENT_Y) && display_move())
+          return;
         break;
       case 4:
         finish();
@@ -179,13 +187,9 @@ void run_interactive_mode(gamma_t *g) {
         break;
       case 'g':
       case 'G':
-        if (gamma_golden_move(BOARD, PLAYER, CURRENT_X, CURRENT_Y)) {
-          draw_board();
-          wrefresh(GAME_WINDOW);
-          next_player();
-        }
+        if (gamma_golden_move(BOARD, PLAYER, CURRENT_X, CURRENT_Y) && display_move())
+          return;
         break;
     }
   }
-  endwin();
 }

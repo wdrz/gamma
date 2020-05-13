@@ -13,7 +13,8 @@ static inline bool line_matches(Line *line, char command, uint16_t num_of_params
     return line->command == command && line->number_of_params == num_of_params;
 }
 
-void interpret_ok(gamma_t *g, Line *line) {
+/* Interpretuje linię której flaga to OK */
+static void interpret_ok(gamma_t *g, Line *line) {
   char *board;
   if (line_matches(line, 'm', 3)) {
     bool_print(gamma_move(g, line->param[0], line->param[1], line->param[2]));
@@ -42,7 +43,6 @@ void interpret_ok(gamma_t *g, Line *line) {
   } else {
     print_error(line);
   }
-
 }
 
 

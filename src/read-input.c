@@ -5,11 +5,10 @@
 #include <ctype.h>
 #include "read-input.h"
 
-Line *CURRENT_LINE;
+static Line *CURRENT_LINE;
 
-// ignoruje resztę linii, ale patrzy czy nie natrafi na EOF. W takim wypadku zwraca true.
-// wpp. zwraca false.
-bool ignore_rest_of_line() {
+/* Ignoruje resztę linii. Dodatkowo, jeśli linia zawiera EOF zwraca true. Wpp zwraca false */
+static bool ignore_rest_of_line(void) {
   char character_on_input = getchar();
   while (character_on_input != '\n' && character_on_input != EOF) {
     character_on_input = getchar();
@@ -21,15 +20,17 @@ bool ignore_rest_of_line() {
   }
 }
 
-// static ???
-void ignore_rest_on_error() {
+/* Ignoruje resztę linii. Jeśli linia zawiera EOF ustawia flagę obecnej linii na EER_END.
+ * Wpp ustawia flagę obecnej linii na ERR */
+static inline void ignore_rest_on_error(void) {
   if (ignore_rest_of_line()) CURRENT_LINE->flag = ERR_END;
   else CURRENT_LINE->flag = ERR;
 }
 
-// zwraca true jesli nalezy kontunuowac wczytywanie linii, false jesli wczytano
-// znak konca linii lub wejscia
-bool look_at_first_char() {
+/* Zwraca true jeśli po wczytaniu pierwszego znaku należy kontynuować
+ * wczytywanie reszty linii, false wpp. Dodatkowo ustawia flagę linii
+ * jeśli da się ją wywnisokować po pierwszym jej znaku. */
+static bool look_at_first_char(void) {
   char first_char = getchar();
   switch (first_char) {
     case EOF:
@@ -55,10 +56,11 @@ bool look_at_first_char() {
   return true;
 }
 
-// zakłada, że flaga CURRENT_LINE to OK
-// zwraca true jesli nalezy kontunuowac wczytywanie linii, false jesli wczytano
-// znak konca linii lub wejscia
-bool look_at_second_char() {
+/* Zwraca true jeśli po wczytaniu drugiego znaku należy kontynuować
+ * wczytywanie reszty linii, false wpp. Dodatkowo ustawia flagę linii
+ * jeśli da się ją wywnisokować po drugim jej znaku. Zakłada, że po wczytaniu
+ * pierwszego znaku flaga linii jest ustawiona na OK. */
+static bool look_at_second_char(void) {
   char second_char = getchar();
   if (second_char == EOF) {
     CURRENT_LINE->flag = ERR_END;
@@ -74,15 +76,14 @@ bool look_at_second_char() {
   }
 }
 
-// moze inline ???
-// zwraca true jesli operacja sie powiodla, false jesli nie
-// pozwalamy na zera wiodące
-bool add_digit_to_number(uint32_t *number, char digit) {
+/* Do liczby *number dopisuje cyfrę digit. Zwraca true jesli operacja sie
+ * powiodla, false wpp. Pozwalamy na zera wiodące. */
+static bool add_digit_to_number(uint32_t *number, char digit) {
   uint32_t temp_number;
   if (digit > '9' || digit < '0')
     return false;
 
-  // patrzymy czy dodanie cyfry nie obróci inta - czy liczba w zakresie
+  // patrzymy czy dodanie cyfry nie obróci uint32 (czyli czy liczba jest w zakresie)
   temp_number = *number * 10 + (digit - '0');
   if (temp_number < *number)
     return false;
@@ -91,9 +92,14 @@ bool add_digit_to_number(uint32_t *number, char digit) {
   return true;
 }
 
-void look_at_the_rest () {
-  // if (ignore_rest_of_line()) CURRENT_LINE->flag = ERR_END;
-
+/* Spogląda na resztę (od trzeciego) znaków w linii. Zakłada, że po przejrzeniu
+ * pierwszych dwóch znaków flaga linii to OK. Ustawia flagę linii na ERR jeśli
+ * * nie prawda ze są same liczby i spacje
+ * * kończy sie EOFem zamiast \n-em
+ * * za dużo liczb na wejsciu
+ * * za duże liczby
+ */
+static void look_at_the_rest(void) {
   uint16_t which_number = -1;
   uint32_t currently_considered_number = 0;
   bool new_block_started = false;
@@ -127,25 +133,13 @@ void look_at_the_rest () {
   }
 
   CURRENT_LINE->number_of_params = which_number + 1;
-
-  // err jesli nie prawda ze juz same liczby i spacje       ok (chyba)
-  // err jesli konczy sie EOFem zamiast \n-em               ok (chyba)
-  // err jesli za duzo liczb na wejsciu                     ok (chyba)
-  // err jesli za dlugie liczby                             !!!!
-  // err jesli stringi cyfr sie nie konweruja do uint64_t   !!!!
 }
 
-// zwraca true jesli alokacja sie powiodla
-// i false wpp.
-bool init_read_input() {
+bool init_read_input(void) {
   CURRENT_LINE = malloc(sizeof(struct line));
   return CURRENT_LINE != NULL;
 }
 
-// alkouje pamięć na linie,
-// w pierwszym wywolaniu alokuje pamiec do lini ktora zwraca.
-// potem juz alokuje w tym samym miejscu, wiec nie nalezy tego za szybko zwalniac!
-// za zwolnienie pamieci odpowiada zewnetrzny moduł.
 Line* get_line() {
   static uint32_t line_number = 0;
 
@@ -158,37 +152,4 @@ Line* get_line() {
   }
 
   return CURRENT_LINE;
-}
-/*
-void print_if_err(Line* line) {
-  if (line->flag == ERR || line->flag == ERR_END)
-    printf("ERROR %u\n", line->line_number);
-}
-*/
-
-void display_line(Line* line) {
-  uint16_t i;
-
-  if (line->flag == END || line->flag == ERR_END) printf("\n");
-
-  printf("line %u - ", line->line_number);
-
-  if (line->flag == OK) printf("OK: ");
-  else if (line->flag == ERR) printf("ERR");
-  else if (line->flag == IGN) printf("IGN");
-  else if (line->flag == END) printf("END");
-  else if (line->flag == ERR_END) printf("ERR_END");
-  else printf("???");
-
-  if (line->flag == OK) {
-    printf("command: %c, ", line->command);
-    printf("num of params: %u,  params: [", line->number_of_params);
-    for (i = 0;i < line->number_of_params; i++){
-        printf("%lu, ", line->param[i]);
-    }
-    if (line->number_of_params == 0) printf("]");
-    else printf("\b\b]");
-  }
-
-  printf("\n");
 }

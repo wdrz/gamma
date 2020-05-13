@@ -1,35 +1,25 @@
-/** @file
- * Implementacja złotego ruchu
- */
-
 #include <stdlib.h>
 #include "golden-move-aux.h"
 #include "gamma-move-aux.h"
 
-/// Pozycja w tablicy pola, które pojawiło się w zapytaniu o złoty ruch (inicjowana w @ref gamma_golden_move)
+/* Pozycja w tablicy pola, które pojawiło się w zapytaniu o złoty ruch (inicjowana w @ref gamma_golden_move) */
 static uint64_t POSITION;
 
-/// Numer gracza, który wykonuje złoty ruch, zmienna inicjowana w funkcji @ref gamma_golden_move
+/* Numer gracza, który wykonuje złoty ruch, zmienna inicjowana w funkcji @ref gamma_golden_move */
 static uint32_t PLAYER;
 
-/// Właściciel pola na które PLAYER chce wykonać złoty ruch (inicjowana w @ref gamma_golden_move)
+/* Właściciel pola na które PLAYER chce wykonać złoty ruch (inicjowana w @ref gamma_golden_move) */
 static uint32_t OWNER;
 
-/// Stan gry gamma, zmienna inicjowana w funkcji @ref gamma_golden_move
+/* Stan gry gamma, zmienna inicjowana w funkcji @ref gamma_golden_move */
 static gamma_t *BOARD;
 
-/// Tabela różnic pierwszych wpółrzędnych pomiędzy dowolnym polem, a jego i-tym sąsiadem
-static const int X[8] = {-1, 0, 1,  0, -1, 1,  1, -1};
-
-/// Tabela różnic drugich wpółrzędnych pomiędzy dowolnym polem, a jego i-tym sąsiadem
-static const int Y[8] = { 0, 1, 0, -1,  1, 1, -1, -1};
-
-/** @brief Zmienia parametry pojedynczego pola przy wykonaniu złotego ruchu
+/* @brief Zmienia parametry pojedynczego pola przy wykonaniu złotego ruchu
  * Aktualizuje liczności pól graczy oraz ustawia pole na należące do
  * odpowiedniego gracza. Zapamiętuje, że gracz wykorzystał swój złoty ruch oraz
  * aktualizuje długość łańcucha znaków, który jest potrzeby aby wypisać planszę.
  */
-void mod_field_count () {
+static inline void mod_field_count(void) {
   BOARD->player_fields[OWNER - 1]--;
   BOARD->player_fields[PLAYER - 1]++;
   BOARD->board[POSITION] = PLAYER;
@@ -37,16 +27,17 @@ void mod_field_count () {
   update_length_of_gamma_board(BOARD, OWNER, PLAYER);
 }
 
-/** @brief Sprawdza czy pole jest otoczone przez pola gracza #OWNER.
+/* @brief Sprawdza czy pole jest otoczone przez pola gracza #OWNER.
  * Sprawdza czy pole (@p x, @p y) jest otoczone przez pola gracza #OWNER.
  * @param[in] x       – numer kolumny, liczba nieujemna mniejsza od wartości
  *                      @p width z funkcji @ref gamma_new,
  * @param[in] y       – numer wiersza, liczba nieujemna mniejsza od wartości
  *                      @p height z funkcji @ref gamma_new.
- * @return true jeśli wszystie pola stykające się bokami lub rogami z polem
- * (@p x, @p y) należą do gracza #PLAYER, false w przeciwnym przypadku
+ * @return pozycja pola (@p x, @p y) jeśli wszystie pola stykające się bokami lub rogami z polem
+ * (@p x, @p y) należą do gracza #PLAYER, w przeciwnym przypadku pozycja pola stykającego
+ * się z (@p x, @p y) nie należącego do gracza #OWNER.
  */
-uint64_t in_the_middle_of_territory(uint32_t x, uint32_t y) {
+static uint64_t in_the_middle_of_territory(uint32_t x, uint32_t y) {
   uint16_t i;
   for (i = 0; i < 8; i++)
     if (has_nth_neighbour(BOARD, i, x, y) && nth_neighbours_val(BOARD, i, x, y) != OWNER)
@@ -59,28 +50,28 @@ uint64_t in_the_middle_of_territory(uint32_t x, uint32_t y) {
 }
 
 
-/** @brief Sprawdza, czy argumenty @ref gamma_golden_move są niepoprawne.
+/* @brief Sprawdza, czy argumenty @ref gamma_golden_move są niepoprawne.
  * Wstępnie waliduje wejście funkcji @ref gamma_golden_move.
  * @param[in] x       – numer kolumny,
  * @param[in] y       – numer wiersza.
  * @return false jeśli gracz wskazał pole leżące na planszy należące do innego gracza,
  * a true jeśli nie
  */
-bool gold_input_incorrect(uint32_t x, uint32_t y) {
+static inline bool gold_input_incorrect(uint32_t x, uint32_t y) {
   return BOARD == NULL || PLAYER == 0 || PLAYER > (BOARD->players) ||
          BOARD->player_golden_used[PLAYER - 1] || (! is_addr_correct(BOARD, x, y)) ||
          BOARD->board[get_position(BOARD, x, y)] == 0 ||
          BOARD->board[get_position(BOARD, x, y)] == PLAYER;
 }
 
-/** Sprawdza czy plansza jest zdegenerowana.
+/* Sprawdza czy plansza jest zdegenerowana.
  * @return true jeśli któryś z wymiarów planszy #BOARD jest równy 1, false jeśli nie
  */
-bool is_degenerated() {
+static inline bool is_degenerated(void) {
   return BOARD->width == 1 || BOARD->height == 1;
 }
 
-/** @brief Aktualizuje liczby pól sąsiadujacych z obszarami graczy
+/* @brief Aktualizuje liczby pól sąsiadujacych z obszarami graczy
  * Zabranie pola (@p x, @p y) graczowi #OWNER, przez gracza #PLAYER
  * sprawia, że część pól sąsiadujących z (@p x, @p y) może zacząć graniczyć
  * z obszarem gracza #PLAYER i przestać z gracza #OWNER. Funkcja odpowiednio
@@ -89,7 +80,7 @@ bool is_degenerated() {
  * @param[in] x       – poprawny numer kolumny,
  * @param[in] y       – poprawny numer wiersza.
  */
-void change_adjacency(uint32_t x, uint32_t y) {
+static void change_adjacency(uint32_t x, uint32_t y) {
   uint16_t i;
   for (i = 0; i < 4; i++)
     if (has_nth_neighbour_is_eq(BOARD, 0, i, x, y)) {
@@ -101,7 +92,7 @@ void change_adjacency(uint32_t x, uint32_t y) {
 }
 
 
-/** @brief Przechodzi rekurencyjnie planszę do gry gamma
+/* @brief Przechodzi rekurencyjnie planszę do gry gamma
  * Przechodzi po obszarze do którego należy pole (@p x, @p y) gracza @p value.
  * Następnik w dsu każdego odwiedzonego wierzchołka ustawia na @p flag.
  * @param[in] flag    – flaga służąca do oznaczania odwiedzonych pól. Przy
@@ -112,16 +103,16 @@ void change_adjacency(uint32_t x, uint32_t y) {
  * @param[in] x       – poprawny numer kolumny,
  * @param[in] y       – poprawny numer wiersza.
  */
-void search(uint64_t flag, uint32_t value, uint32_t x, uint32_t y) {
+static void search(uint64_t flag, uint32_t value, uint32_t x, uint32_t y) {
   uint16_t i;
   BOARD->dsu[get_position(BOARD, x, y)] = flag;
   for (i = 0; i < 4; i++)
     if (has_nth_neighbour_is_eq(BOARD, value, i, x, y) &&
         BOARD->dsu[nth_neighbours_pos(BOARD, i, x, y)] != flag)
-          search(flag, value, x + X[i], y + Y[i]);
+          search(flag, value, x + X_DELTA[i], y + Y_DELTA[i]);
 }
 
-/** @brief Zwraca liczbę obszarów na ile rozpada się obszar po zabraniu pola
+/* @brief Zwraca liczbę obszarów na ile rozpada się obszar po zabraniu pola
  * Zwraca liczbę obszarów na ile rozpadłby się ten obszar gracza #OWNER do
  * w którym znajduje się pole (@p x, @p y) gdyby pole (@p x, @p y) przestało należeć
  * do tego gracza. Funkcja modyfikuje stan gry gamma: ustawia następnik wszystkich
@@ -133,43 +124,43 @@ void search(uint64_t flag, uint32_t value, uint32_t x, uint32_t y) {
  * @param[in] y       – poprawny numer wiersza.
  * @return
  */
-uint16_t crumbles_to_how_many_parts(uint32_t x, uint32_t y, uint64_t flag) {
+static uint16_t crumbles_to_how_many_parts(uint32_t x, uint32_t y, uint64_t flag) {
   uint16_t i, result = 0;
   BOARD->board[get_position(BOARD, x, y)] = 0;
   for (i = 0; i < 4; i++)
     if (has_nth_neighbour_is_eq(BOARD, OWNER, i, x, y) &&
         BOARD->dsu[nth_neighbours_pos(BOARD, i, x, y)] != flag) {
       result++;
-      search(flag, OWNER, x + X[i], y + Y[i]);
+      search(flag, OWNER, x + X_DELTA[i], y + Y_DELTA[i]);
     }
   return result;
 }
 
-/** @brief Sprawdza, czy obszar nie rozpada sie na nielegalnie wiele części
+/* @brief Sprawdza, czy obszar nie rozpada sie na nielegalnie wiele części
  * Sprawdza, czy gracz @p whose_area może mieć @p pieces obszarów więcej i
  * czy nie przekroczy w ten sposób maksymalnej liczby obszarów.
  * @return true jeśli nie przekroczy, false jeśli przekroczy
  */
-bool can_be_divided(uint32_t whose_area, uint16_t pieces) {
+static inline bool can_be_divided(uint32_t whose_area, uint16_t pieces) {
   return BOARD->player_areas[whose_area - 1] + pieces - 1 <= BOARD->max_areas;
 }
 
-/** @brief Modyfikuje dsu tak aby zapamiętać rozpad obszaru.
+/* @brief Modyfikuje dsu tak aby zapamiętać rozpad obszaru.
  * Przechodzi po oflagowanych (@p flag) polach gracza #OWNER i ustawia następniki
  * tych pól w dsu tak, aby oddawały zachodzący właśnie podział obszaru
  * @param[in] flag    – flaga
  * @param[in] x       – poprawny numer kolumny,
  * @param[in] y       – poprawny numer wiersza.
  */
-void fix_after_search_when_divides(uint32_t x, uint32_t y, uint64_t flag) {
+static void fix_after_search_when_divides(uint32_t x, uint32_t y, uint64_t flag) {
   uint16_t i;
   for (i = 0; i < 4; i++)
     if (has_nth_neighbour_is_eq(BOARD, OWNER, i, x, y) &&
         BOARD->dsu[nth_neighbours_pos(BOARD, i, x, y)] == flag)
-          search(nth_neighbours_pos(BOARD, i, x, y), OWNER, x + X[i], y + Y[i]);
+          search(nth_neighbours_pos(BOARD, i, x, y), OWNER, x + X_DELTA[i], y + Y_DELTA[i]);
 }
 
-/** @brief Modyfikuje dsu tak, aby wycofać się rozkładania obszaru na części
+/* @brief Modyfikuje dsu tak, aby wycofać się rozkładania obszaru na części
  * Przechodzi po tym obszarze gracza #OWNER do którego należy pole (@p x, @p y)
  * i ustawia następniki tych pól w dsu na pole (@p x, @p y).
  * Zakłada, że każde z pól tego obszaru jest oflagowane (@p flag) oraz że @p flag nie
@@ -178,14 +169,14 @@ void fix_after_search_when_divides(uint32_t x, uint32_t y, uint64_t flag) {
  * @param[in] x       – poprawny numer kolumny,
  * @param[in] y       – poprawny numer wiersza.
  */
-void fix_when_too_many_parts(uint32_t x, uint32_t y, uint64_t flag) {
+static void fix_when_too_many_parts(uint32_t x, uint32_t y, uint64_t flag) {
   BOARD->board[get_position(BOARD, x, y)] = OWNER;
   BOARD->dsu[get_position(BOARD, x, y)] = flag;
   search(get_position(BOARD, x, y), OWNER, x, y);
   BOARD->dsu[get_position(BOARD, x, y)] = get_position(BOARD, x, y);
 }
 
-/** @brief Decyduje czy można podzielić obszar i go dzieli
+/* @brief Decyduje czy można podzielić obszar i go dzieli
  * Przeprowadza lub nie przeprowadza złotego ruchu
  * @param[in] flag    – pewna liczba, o której wiadomo, że żadne pole gracza
  *                      #OWNER nie ma ustawionego następnika w dsu na tą liczbę
@@ -194,7 +185,7 @@ void fix_when_too_many_parts(uint32_t x, uint32_t y, uint64_t flag) {
  * @return true jeśli wykonano złoty ruch, false jeśli wykonanie złotego
  * ruchu sprawiłoby że obszary jakiegoś gracza przekroczyłyby maksimum
  */
-bool crumble(uint32_t x, uint32_t y, uint64_t flag) {
+static bool crumble(uint32_t x, uint32_t y, uint64_t flag) {
   uint16_t parts = crumbles_to_how_many_parts(x, y, flag);
 
   if (can_be_divided(OWNER, parts)) {
@@ -214,7 +205,7 @@ bool crumble(uint32_t x, uint32_t y, uint64_t flag) {
 bool gamma_golden_move(gamma_t *g_temp, uint32_t player_temp, uint32_t x, uint32_t y) {
   PLAYER = player_temp;
   BOARD = g_temp;
-  if (gold_input_incorrect(x, y) || (! is_adjacent(BOARD, PLAYER, x, y)
+  if (gold_input_incorrect(x, y) || (!is_adjacent(BOARD, PLAYER, x, y)
       && BOARD->player_areas[PLAYER - 1] == BOARD->max_areas)) {
         return false;
   } else {

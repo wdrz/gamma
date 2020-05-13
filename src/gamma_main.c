@@ -12,8 +12,8 @@ static inline bool starts_a_mode(Line *line) {
      (line->command == 'I' || line->command == 'B');
 }
 
-// zwraca false jesli nie udalo sie rozpoczac jakiegos trybu i true jesli udalo się
-bool try_to_start_mode(Line *line) {
+/* Zwraca false jeśli nie udało się rozpocząć żadnego trybu i true jeśli udało się. */
+static bool try_to_start_mode(Line *line) {
   if (line->flag == IGN || line->flag == END)
     return false;
 
@@ -39,16 +39,14 @@ bool try_to_start_mode(Line *line) {
   return true;
 }
 
-int main() {
+int main(void) {
   Line* line;
 
-  if (!init_read_input()) {
-    return 1;
-  }
+  if (!init_read_input())
+    exit(1);
 
   do {
     line = get_line();
-    // display_line(line);
 
     if (try_to_start_mode(line))
       break;

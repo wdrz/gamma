@@ -17,7 +17,7 @@
  * @param[in] old      – stary właściciel pola (lub 0 jeśli puste),
  * @param[in] new      – nowy właściciel pola.
  */
-void update_length_of_gamma_board(gamma_t *g, uint32_t old, uint32_t new);
+extern void update_length_of_gamma_board(gamma_t *g, uint32_t old, uint32_t new);
 
 /** @brief Aktualizuje stan struktury zbiorów rozłącznych.
  * Gdy puste pole (@p x, @p y) przechodzi na własność gracza @p player, aktualizuje
@@ -29,39 +29,20 @@ void update_length_of_gamma_board(gamma_t *g, uint32_t old, uint32_t new);
  * @param[in] x        – poprawny numer kolumny,
  * @param[in] y        – poprawny numer wiersza.
  */
-void update_dsu_and_areas (gamma_t *g, uint32_t player, uint32_t x, uint32_t y);
+extern void update_dsu_and_areas(gamma_t *g, uint32_t player, uint32_t x, uint32_t y);
 
-/** @brief Aktualizuje liczby pól sąsiadujących z polami graczy.
- * Gdy pole (@p x, @p y) przechodzi na własność gracza @p player, aktualizuje
- * liczby pól sąsiadujących z polami graczy tak żeby były one prawdą po wykonaniu ruchu.
- * UWAGA: zakłada, że pole (@p x, @p y) ustawione jest jako puste
+
+/** @brief Wykonuje ruch.
+ * Ustawia pionek gracza @p player na polu (@p x, @p y).
  * @param[in,out] g   – wskaźnik na strukturę przechowującą stan gry,
- * @param[in] player   – poprawny numer gracza lub 0 (puste pole),
- * @param[in] x        – poprawny numer kolumny,
- * @param[in] y        – poprawny numer wiersza.
+ * @param[in] player  – numer gracza, liczba dodatnia niewiększa od wartości
+ *                      @p players z funkcji @ref gamma_new,
+ * @param[in] x       – numer kolumny, liczba nieujemna mniejsza od wartości
+ *                      @p width z funkcji @ref gamma_new,
+ * @param[in] y       – numer wiersza, liczba nieujemna mniejsza od wartości
+ *                      @p height z funkcji @ref gamma_new.
+ * @return Wartość @p true, jeśli ruch został wykonany, a @p false,
+ * gdy ruch jest nielegalny lub któryś z parametrów jest niepoprawny.
  */
-void update_adjacency (gamma_t *g,  uint32_t player, uint32_t x, uint32_t y);
-
-
- /** @brief Sprawdza czy wejscie funkcji gamma_move jest niepoprawne.
-  * Sprawdza czy można wykonać gamma_move na planszy i na pole przez gracza
-  * @param[in] g       – wskaźnik na strukturę przechowującą stan gry,
-  * @param[in] player  – poprawny numer gracza,
-  * @param[in] x       – poprawny numer kolumny,
-  * @param[in] y       – poprawny numer wiersza.
-  * @return true jeśli jest niepoprawny, false jeśli jest poprawny
-  */
-bool gm_input_incorrect (gamma_t *g, uint32_t player, uint32_t x, uint32_t y);
-
-
-/** @brief Sprawdza czy wykonanie ruchu nie sprawi że gracz będzie miał za dużo obszarów
- * Sprawdza czy wykonanie ruchu na puste pole (@p x, @p y) przez gracza @p player
- * sprawi, że liczba obszarów tego gracza przekroczy areas z funkcji @ref gamma_new
- * @param[in] g       – wskaźnik na strukturę przechowującą stan gry,
- * @param[in] player  – poprawny numer gracza,
- * @param[in] x       – poprawny numer kolumny,
- * @param[in] y       – poprawny numer wiersza.
- * @return true jeśli przekroczy, false jeśli nie
- */
-bool too_many_areas (gamma_t *g, uint32_t player, uint32_t x, uint32_t y);
+extern bool gamma_move(gamma_t *g, uint32_t player, uint32_t x, uint32_t y);
 #endif
