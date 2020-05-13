@@ -9,6 +9,9 @@ Uwaga: aktualna treść zadania znajduje się w [Moodle'u](https://moodle.mimuw.
 
 Tegoroczne duże zadanie polega na zaimplementowaniu gry gammma.
 
-TODO
+Moduły basic_manipulations, gamma, gamma-move-aux, golden-move-aux udostępniają silnik
+gry gamma.
+
+Moduły gamma_main, batch-mode, interactive-mode, read-input umożliwiają przeprowadzanie rozgrywki.
 
 */

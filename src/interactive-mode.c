@@ -66,9 +66,9 @@ static void draw_board(void) {
   uint16_t i, j;
   uint32_t owner;
   goto_start_position();
-  for (j = 0; j < BOARD->height; j++) {
+  for (j = BOARD->height; j > 0; j--) {
     for (i = 0; i < BOARD->width; i++) {
-      owner = BOARD->board[get_position(BOARD, i, j)];
+      owner = BOARD->board[get_position(BOARD, i, j - 1)];
       if (owner == 0) {
         printf(".");
       } else {
@@ -137,7 +137,8 @@ static bool display_move(void) {
  * czy naciśnięta zastała strzałka i jeśli tak to wywołuje odpowienią funkcję */
 static void handle_arrows() {
   char ch;
-  getchar(); // pomin znak
+  ch = getchar();
+  if (ch != '[') return;
   ch = getchar();
   switch (ch) {
     case 'A': // GÓRA
