@@ -133,13 +133,11 @@ static bool display_move(void) {
   return false;
 }
 
-/* Interpretuje drugi i trzeci znak ansi escape code'a: na ich podstawie określa
- * czy naciśnięta zastała strzałka i jeśli tak to wywołuje odpowienią funkcję */
-static void handle_arrows() {
-  char ch;
-  ch = getchar();
-  if (ch != '[') return;
-  ch = getchar();
+/* Sprawdza, czy wczytano obslugiwany ascii escape code (true) i na tej podstawie określa
+ * wywołuje odpowienią funkcję. Zwraca false jeśli nie wczytał strzałki. */
+static bool handle_arrows(int ch, int prev_ch, int prevprev_ch) {
+  if (prevprev_ch != '\033' || prev_ch != '[' ) // escape + [
+    return false;
   switch (ch) {
     case 'A': // GÓRA
       if_has_neighbour_move(1);
@@ -153,12 +151,47 @@ static void handle_arrows() {
     case 'D': // LEWA
       if_has_neighbour_move(0);
       break;
+    default:
+      return false;
   }
+  return true;
+}
+
+/* zwraca true jeśli gra powinna się zakończyć, false w przeciwnym przypadku */
+static bool handle_moves(int ch) {
+  switch (ch) {
+    case ' ':
+      if (gamma_move(BOARD, PLAYER, CURRENT_X, CURRENT_Y) && display_move())
+        return true;
+      break;
+    case 4:
+      finish();
+      return true;
+      break;
+    case 'c':
+    case 'C':
+      next_player();
+      break;
+    case 'g':
+    case 'G':
+      if (gamma_golden_move(BOARD, PLAYER, CURRENT_X, CURRENT_Y) && display_move())
+        return true;
+      break;
+  }
+  return false;
+}
+
+void get_character(int *ch, int *prev_ch, int *prevprev_ch) {
+  *prevprev_ch = *prev_ch;
+  *prev_ch = *ch;
+  *ch = getchar();
 }
 
 void run_interactive_mode(gamma_t *g) {
   BOARD = g;
-  int ch;
+
+  // wczytywany znak; poprzedni wczytany znak; znak dwa znaki temu
+  int ch = 4, prev_ch = 4, prevprev_ch;
 
   init_console();
   draw_board();
@@ -169,28 +202,7 @@ void run_interactive_mode(gamma_t *g) {
   move_to_right_position();
 
   for (;;) {
-    ch = getchar();
-    switch (ch) {
-      case '\033': // escape
-        handle_arrows();
-        break;
-      case ' ':
-        if (gamma_move(BOARD, PLAYER, CURRENT_X, CURRENT_Y) && display_move())
-          return;
-        break;
-      case 4:
-        finish();
-        return;
-        break;
-      case 'c':
-      case 'C':
-        next_player();
-        break;
-      case 'g':
-      case 'G':
-        if (gamma_golden_move(BOARD, PLAYER, CURRENT_X, CURRENT_Y) && display_move())
-          return;
-        break;
-    }
+    get_character(&ch, &prev_ch, &prevprev_ch);
+    if (!handle_arrows(ch, prev_ch, prevprev_ch) && handle_moves(ch)) return;
   }
 }
