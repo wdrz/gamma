@@ -37,6 +37,10 @@ set(SOURCE_FILES
     src/read-input.h
     src/batch-mode.c
     src/batch-mode.h
+    src/low-module.c
+    src/low-module.h
+    src/enhanced-print.c
+    src/enhanced-print.h
     )
 
 # Wskazujemy plik wykonywalny.

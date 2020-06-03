@@ -5,8 +5,8 @@
 #ifndef INTERACTIVE_MODE_H
 #define INTERACTIVE_MODE_H
 
-# include <stdlib.h>
-# include "basic_manipulations.h"
+#include <stdlib.h>
+#include "basic_manipulations.h"
 
 /** @brief Uruchamia tryb interaktywny.
 * Przeprowadza rozgrywkę gry gamma w trybie interaktywnym.

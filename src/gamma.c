@@ -1,10 +1,10 @@
-# include <stdio.h>
-# include <stdbool.h>
-# include <stdint.h>
-# include <stdlib.h>
-# include "gamma.h"
-# include "basic_manipulations.h"
-# include "gamma-move-aux.h"
+#include <stdio.h>
+#include <stdbool.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include "gamma.h"
+#include "basic_manipulations.h"
+#include "gamma-move-aux.h"
 
 
 void gamma_delete(gamma_t *g) {
@@ -15,6 +15,8 @@ void gamma_delete(gamma_t *g) {
   free(g->player_areas);
   free(g->player_adjacent);
   free(g->player_golden_used);
+  free(g->preorder);
+  free(g->num_of_bridges);
   free(g);
 }
 
@@ -32,6 +34,7 @@ gamma_t* gamma_new(uint32_t width, uint32_t height, uint32_t players, uint32_t a
     g->max_areas = areas;
     g->empty_fields = (uint64_t) width * (uint64_t) height;
     g->length_of_string = (width + 1) * height + 1;
+    g->low_updated = false;
 
     g->dsu = calloc((uint64_t) width * (uint64_t) height, sizeof(uint64_t));
     g->board = calloc((uint64_t) width * (uint64_t) height, sizeof(uint32_t));
@@ -39,8 +42,11 @@ gamma_t* gamma_new(uint32_t width, uint32_t height, uint32_t players, uint32_t a
     g->player_areas = calloc(players, sizeof(uint32_t));
     g->player_adjacent = calloc(players, sizeof(uint32_t));
     g->player_golden_used = calloc(players, sizeof(bool));
+    g->num_of_bridges = calloc((uint64_t) width * (uint64_t) height, sizeof(uint16_t));
+    g->preorder = malloc((uint64_t) width * (uint64_t) height * sizeof(uint64_t));
     if (g->dsu == NULL || g->board == NULL || g->player_areas == NULL ||
-        g->player_adjacent == NULL || g->player_golden_used == NULL) {
+        g->player_adjacent == NULL || g->player_golden_used == NULL || 
+        g->preorder == NULL || g->num_of_bridges == NULL) {
           free(g);
           return NULL;
     }

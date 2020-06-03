@@ -122,5 +122,7 @@ bool gamma_move(gamma_t *g, uint32_t player, uint32_t x, uint32_t y) {
   g->empty_fields--;
   update_length_of_gamma_board(g, 0, player);
 
+  g->low_updated = false;
+  
   return true;
 }

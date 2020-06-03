@@ -5,6 +5,16 @@ const int X_DELTA[8] = {-1, 0, 1,  0, -1, 1,  1, -1};
 const int Y_DELTA[8] = { 0, 1, 0, -1,  1, 1, -1, -1};
 
 
+bool old_golden_possible(gamma_t *g, uint32_t player) {
+  if (g == NULL || player > g->players || player == 0)
+    return false;
+  else
+    return (! g->player_golden_used[player - 1]) &&
+      ((g->width * g->height) - (g->empty_fields) -
+      (g->player_fields[player - 1]) > 0);
+}
+
+
 uint64_t find(gamma_t *g, uint64_t position) {
   uint64_t* content = g -> dsu + position;
   if (*content == position) {

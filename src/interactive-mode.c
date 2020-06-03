@@ -1,6 +1,8 @@
 #include "gamma.h"
 #include "interactive-mode.h"
 #include "basic_manipulations.h"
+#include "enhanced-print.h"
+#include "low-module.h"
 #include <stdio.h>
 #include <termios.h>
 #include <stdlib.h>
@@ -63,21 +65,9 @@ static void if_has_neighbour_move(uint16_t n) {
 /* Poczynając od lewego górnego rogu konsoli, rysuje planszę do gry gamma.
  * zapisuje pozycję kursora, gdzie skończył */
 static void draw_board(void) {
-  uint16_t i, j;
-  uint32_t owner;
+  printf("\033[2J"); // czyszczenie ekranu
   goto_start_position();
-  for (j = BOARD->height; j > 0; j--) {
-    for (i = 0; i < BOARD->width; i++) {
-      owner = BOARD->board[get_position(BOARD, i, j - 1)];
-      if (owner == 0) {
-        printf(".");
-      } else {
-        printf("%c", player_character(owner));
-      }
-    }
-    printf("\n");
-  }
-  printf("\x1b%d", 7); // zapisz pozycje kursora
+  print_enhanced_board(BOARD, PLAYER);
   move_to_right_position();
 }
 
@@ -91,23 +81,8 @@ static void draw_footer(void) {
   move_to_right_position();
 }
 
-/* Przeskakuje do następnego gracza, który nadal może wykonać ruch i zwraca true.
- * Jeśli takiego gracza nie ma, zwraca false */
-static bool next_player(void) {
-  uint16_t i, player;
-  for (i = 0; i < BOARD->players; i++) {
-    player = (PLAYER + i) % BOARD->players + 1;
-    if (gamma_free_fields(BOARD, player) != 0 || gamma_golden_possible(BOARD, player)) {
-      PLAYER = player;
-      draw_footer();
-      return true;
-    }
-  }
-  return false;
-}
-
 /* Kończy tryb interaktywny: wychodzi z bufora, wypisuje podsumowanie gry gamma */
-static void finish() {
+static void finish(void) {
   uint32_t i;
   printf("\033[?1049l"); /* wyjdz z bufora */
   char *result = gamma_board(BOARD);
@@ -121,14 +96,18 @@ static void finish() {
   }
 }
 
-/* Aktualizuje wyświetlaną tablicę o ruch gracza PLAYER na pole CURRENT_X,
- * CURRENT_Y. Zwraca true jeśli gra gamma powinna się zakończyć, false wpp */
-static bool display_move(void) {
-  printf("%c", player_character(PLAYER));
-  move_to_right_position();
-  if (!next_player()) {
-    finish();
-    return true;
+/* Przeskakuje do następnego gracza, który nadal może wykonać ruch i zwraca true.
+ * Jeśli takiego gracza nie ma, zwraca false */
+static bool next_player(void) {
+  uint16_t i, player;
+  for (i = 0; i < BOARD->players; i++) {
+    player = (PLAYER + i) % BOARD->players + 1;
+    if (gamma_free_fields(BOARD, player) != 0 || gamma_golden_possible(BOARD, player)) {
+      PLAYER = player;
+      draw_board();
+      draw_footer();
+      return true;
+    }
   }
   return false;
 }
@@ -159,10 +138,16 @@ static bool handle_arrows(int ch, int prev_ch, int prevprev_ch) {
 
 /* zwraca true jeśli gra powinna się zakończyć, false w przeciwnym przypadku */
 static bool handle_moves(int ch) {
+  uint32_t x = CURRENT_X, y = CURRENT_Y;
   switch (ch) {
     case ' ':
-      if (gamma_move(BOARD, PLAYER, CURRENT_X, CURRENT_Y) && display_move())
-        return true;
+      if (gamma_move(BOARD, PLAYER, x, y)) {
+        actualise_low_after_move(BOARD, x, y);
+        if (!next_player()) {
+          finish();
+          return true;
+        }
+      }
       break;
     case 4:
       finish();
@@ -174,8 +159,13 @@ static bool handle_moves(int ch) {
       break;
     case 'g':
     case 'G':
-      if (gamma_golden_move(BOARD, PLAYER, CURRENT_X, CURRENT_Y) && display_move())
-        return true;
+      if (gamma_golden_move(BOARD, PLAYER, CURRENT_X, CURRENT_Y)) {
+        actualise_low_all(BOARD);
+        if (!next_player()) {
+          finish();
+          return true;
+        }
+      }
       break;
   }
   return false;
