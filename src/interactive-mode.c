@@ -42,11 +42,14 @@ static void init_console(void) {
   printf("\033[?1049h\033[H");         /* nowy bufor */
 }
 
-/* Zwraca symbol, który będzie reprezentował gracza player w trybie interaktywnym */
-static char player_character(uint32_t player) {
-  if (player <= 9) return '0' + player;
-  if (player <= 35) return 'A' + (player - 10);
-  else return '?';
+void debug() {
+  uint32_t i, j;
+  for (j = BOARD->height; j > 0; j--) {
+    for (i = 0; i < BOARD->width; i++) {
+      printf("%hu", BOARD->num_of_bridges[get_position(BOARD, i, j - 1)]);
+    }
+    printf("\n");
+  }
 }
 
 /* Przesuwa rozpatrywane pole w lewo, prawo, górę lub dół w zależności od
@@ -94,6 +97,7 @@ static void finish(void) {
   for (i = 1; i <= BOARD->players; i++) {
     printf("PLAYER %u %lu\n", i, gamma_busy_fields(BOARD, i));
   }
+  debug();
 }
 
 /* Przeskakuje do następnego gracza, który nadal może wykonać ruch i zwraca true.

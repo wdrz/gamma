@@ -37,7 +37,8 @@ typedef struct gamma {
   uint64_t length_of_string;   ///<długość łańcucha znaków, opisującego stan planszy
 
   uint64_t *preorder;          ///<numer preorder pola w grafie obszaru, używane przez moduł LOW
-  uint16_t *num_of_bridges;    ///<na ile obszarów rozpada się obszar po wyrzuceniu tego pola (moduł LOW)
+  uint16_t *num_of_bridges;    /**<Jeśli ta liczba jest większa niż 9 to jest to punkt arytkulacji.
+                                *  Modulo 10 daje informację ile jest mostów incydentnych z polem */
   bool low_updated;            ///<informacja o tym, czy tablica low jest aktualna, tzn. czy opisuje obecny stan gry
 } gamma_t;
 
@@ -153,6 +154,17 @@ static inline bool has_nth_neighbour(gamma_t *g, uint16_t n, uint32_t x, uint32_
  * w przeciwnym przypadku.
  */
 extern bool is_adjacent(gamma_t *g, uint32_t player, uint32_t x, uint32_t y);
+
+
+/** @brief Liczy ilu sąsiadów (@p x, @p y) należy do gracza @p player.
+ * @param[in] g        – wskaźnik na strukturę przechowującą stan gry,
+ * @param[in] player   – numer gracza lub 0 (puste pole),
+ * @param[in] x        – poprawny numer kolumny,
+ * @param[in] y        – poprawny numer wiersza.
+ * @return liczba pól sąsiadujących z (@p x, @p y) należących do gracza @p player.
+ */
+extern uint16_t num_of_adjacent(gamma_t *g, uint32_t player, uint32_t x, uint32_t y);
+
 
 /** @brief Sprawdza, czy pole ma sąsiada i czy należy on do gracza @p value.
  * @param[in] g        – wskaźnik na strukturę przechowującą stan gry,

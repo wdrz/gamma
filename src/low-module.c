@@ -23,20 +23,23 @@ static void clear_area_rec(gamma_t *g, uint32_t x, uint32_t y, uint32_t player) 
 // zakłada, że preorder wszystkich pól należących do obszaru do którego należy x, y są ustawione na 0
 // Mały trik: (x, y) jest korzeniem <=> pos = previous_pos
 static uint64_t low_rec(gamma_t *g, uint32_t x, uint32_t y, uint32_t player, uint64_t previous_pos) {
-  uint16_t i;
-  uint64_t pos = get_position(g, x, y), low = PREORDER, neighbour_pos;
+  uint16_t i, num_of_children = 0;
+  uint64_t pos = get_position(g, x, y), low = PREORDER, neighbour_pos, low_next;
+  bool articulation_point_found = false;
 
-  g->preorder[pos] = PREORDER;
-  PREORDER++;
+  g->preorder[pos] = PREORDER++;
 
   for (i = 0; i < 4; i++) {
     if (has_nth_neighbour_is_eq(g, player, i, x, y)) {
       neighbour_pos = nth_neighbours_pos(g, i, x, y);
-
       if (neighbour_pos == previous_pos) continue; // sąsiad jest ojcem w drzewie dfs
 
       if (g->preorder[neighbour_pos] == 0) { // sąsiad nieodwiedzony
-        low = min(low, low_rec(g, x + X_DELTA[i], y + Y_DELTA[i], player, pos));
+        num_of_children++;
+        low_next = low_rec(g, x + X_DELTA[i], y + Y_DELTA[i], player, pos);
+        low = min(low, low_next);
+        if (low_next >= g->preorder[pos]) // znaleziono punkt artykulacji o ile to nie korzeń
+          articulation_point_found = true;
 
       } else { // sąsiad odwiedzony
         low = min(low, g->preorder[neighbour_pos]);
@@ -44,15 +47,20 @@ static uint64_t low_rec(gamma_t *g, uint32_t x, uint32_t y, uint32_t player, uin
     }
   }
 
-  if (previous_pos != pos && low == g->preorder[pos]) {
+  if (previous_pos != pos && low == g->preorder[pos]) { // znaleziono most
     g->num_of_bridges[pos]++;
     g->num_of_bridges[previous_pos]++;
+  }
+
+  if ((previous_pos == pos && num_of_children > 1) ||
+    (previous_pos != pos && articulation_point_found)) { // znaleziono punkt artykulacji
+      g->num_of_bridges[pos] += 10;
   }
 
   return low;
 }
 
-// zakłada, że preorder wszystkich pól należących do obszaru do którego należy pole position są 
+// zakłada, że preorder wszystkich pól należących do obszaru do którego należy pole position są
 // ustawione na 0. Zakłada, że pole position należy do jakiegoś gracza
 static void evaluate_low(gamma_t *g, uint64_t position) {
   uint32_t pos_start = find(g, position);
@@ -83,7 +91,7 @@ static void evaluate_low_all(gamma_t *g, uint64_t size) {
 
 void actualise_low_all(gamma_t *g) {
   uint64_t size = (uint64_t) g->width * (uint64_t) g->height;
-  
+
   clear_all(g, size);
   evaluate_low_all(g, size);
 }

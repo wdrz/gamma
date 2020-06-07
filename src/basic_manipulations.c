@@ -28,13 +28,17 @@ uint64_t find(gamma_t *g, uint64_t position) {
 
 
 bool is_adjacent(gamma_t *g, uint32_t player, uint32_t x, uint32_t y) {
-  uint32_t i;
-  for (i = 0; i < 4; i++)
+  return scan_neighbours(g, 4, player, x, y);
+}
+
+
+uint16_t num_of_adjacent(gamma_t *g, uint32_t player, uint32_t x, uint32_t y){
+  uint16_t i, result = 0;
+  for (i = 0 ; i < 4; i++)
     if (has_nth_neighbour(g, i, x, y))
       if (nth_neighbours_val(g, i, x, y) == player)
-        return true;
-
-  return false;
+        result++;
+  return result;
 }
 
 
