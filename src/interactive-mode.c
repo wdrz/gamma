@@ -19,6 +19,8 @@ static gamma_t *BOARD;
 /* Numer gracza, o którym oczekujemy że wykona ruch */
 static uint32_t PLAYER = 1;
 
+static bool SIGNAL = true;
+
 /* Ustawienia konsoli przed i po zainicjowaniu trybu interaktywnego */
 static struct termios OLD_SETTING, NEW_SETTING;
 
@@ -33,13 +35,14 @@ static inline void goto_start_position(void) {
 }
 
 /* Ustawia działanie konsoli */
-static void init_console(void) {
-  tcgetattr(0, &OLD_SETTING);          /* Pobierz stare ustawienia i/o terminala */
+static bool init_console(void) {
+  if (tcgetattr(0, &OLD_SETTING) == -1) return false;          /* Pobierz stare ustawienia i/o terminala */
   NEW_SETTING = OLD_SETTING;
-  NEW_SETTING.c_lflag &= ~ICANON;      /* wyłącz buforowanie znaków w linię */
-  NEW_SETTING.c_lflag &= ~ECHO;        /* wyłącz echo terminala */
-  tcsetattr(0, TCSANOW, &NEW_SETTING); /* użyj nowych ustawień terminala */
-  printf("\033[?1049h\033[H");         /* nowy bufor */
+  NEW_SETTING.c_lflag &= ~ICANON;                              /* wyłącz buforowanie znaków w linię */
+  NEW_SETTING.c_lflag &= ~ECHO;                                /* wyłącz echo terminala */
+  if (tcsetattr(0, TCSANOW, &NEW_SETTING) == -1) return false; /* użyj nowych ustawień terminala */
+  printf("\033[?1049h\033[H");                                 /* nowy bufor */
+  return true;
 }
 
 void debug() {
@@ -49,6 +52,10 @@ void debug() {
       printf("%hu", BOARD->num_of_bridges[get_position(BOARD, i, j - 1)]);
     }
     printf("\n");
+  }
+  printf("\n");
+  for (i = 0; i < BOARD->players; i++) {
+    printf("areas of player %u: %u\n", i + 1, BOARD->player_areas[i]);
   }
 }
 
@@ -156,7 +163,6 @@ static bool handle_moves(int ch) {
     case 4:
       finish();
       return true;
-      break;
     case 'c':
     case 'C':
       next_player();
@@ -171,6 +177,9 @@ static bool handle_moves(int ch) {
         }
       }
       break;
+    case EOF:
+      SIGNAL = false;
+      return false;
   }
   return false;
 }
@@ -181,13 +190,13 @@ void get_character(int *ch, int *prev_ch, int *prevprev_ch) {
   *ch = getchar();
 }
 
-void run_interactive_mode(gamma_t *g) {
+bool run_interactive_mode(gamma_t *g) {
   BOARD = g;
 
   // wczytywany znak; poprzedni wczytany znak; znak dwa znaki temu
   int ch = 4, prev_ch = 4, prevprev_ch;
 
-  init_console();
+  if (!init_console()) return false;
   draw_board();
   draw_footer();
 
@@ -197,6 +206,8 @@ void run_interactive_mode(gamma_t *g) {
 
   for (;;) {
     get_character(&ch, &prev_ch, &prevprev_ch);
-    if (!handle_arrows(ch, prev_ch, prevprev_ch) && handle_moves(ch)) return;
+    if (!handle_arrows(ch, prev_ch, prevprev_ch) && handle_moves(ch)) return SIGNAL;
   }
+
+  return SIGNAL;
 }

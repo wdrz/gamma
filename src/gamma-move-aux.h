@@ -19,18 +19,6 @@
  */
 extern void update_length_of_gamma_board(gamma_t *g, uint32_t old, uint32_t new);
 
-/** @brief Aktualizuje stan struktury zbiorów rozłącznych.
- * Gdy puste pole (@p x, @p y) przechodzi na własność gracza @p player, aktualizuje
- * strukturę zbiorów rozłącznych pól planszy, tak aby pola w tym samym obszarze miały
- * tego samego reprezentanta. Aktualizuje liczbę obszarów gracza, jeśli ulegnie ona
- * zmianie w wyniku tego ruchu.
- * @param[in,out] g   – wskaźnik na strukturę przechowującą stan gry,
- * @param[in] player   – poprawny numer gracza lub 0 (puste pole),
- * @param[in] x        – poprawny numer kolumny,
- * @param[in] y        – poprawny numer wiersza.
- */
-extern void update_dsu_and_areas(gamma_t *g, uint32_t player, uint32_t x, uint32_t y);
-
 
 /** @brief Wykonuje ruch.
  * Ustawia pionek gracza @p player na polu (@p x, @p y).

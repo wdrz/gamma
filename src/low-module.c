@@ -94,6 +94,7 @@ void actualise_low_all(gamma_t *g) {
 
   clear_all(g, size);
   evaluate_low_all(g, size);
+  g->low_updated = true;
 }
 
 
@@ -102,4 +103,5 @@ void actualise_low_after_move(gamma_t *g, uint32_t x, uint32_t y) {
 
   clear_area_rec(g, x, y, g->board[pos]);
   evaluate_low(g, pos);
+  g->low_updated = true;
 }

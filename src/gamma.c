@@ -5,18 +5,20 @@
 #include "gamma.h"
 #include "basic_manipulations.h"
 #include "gamma-move-aux.h"
+#include "enhanced-print.h"
+#include "low-module.h"
 
 
 void gamma_delete(gamma_t *g) {
   if (g == NULL) return;
-  free(g->board);
   free(g->dsu);
+  free(g->board);
   free(g->player_fields);
   free(g->player_areas);
   free(g->player_adjacent);
   free(g->player_golden_used);
-  free(g->preorder);
   free(g->num_of_bridges);
+  free(g->preorder);
   free(g);
 }
 
@@ -45,9 +47,9 @@ gamma_t* gamma_new(uint32_t width, uint32_t height, uint32_t players, uint32_t a
     g->num_of_bridges = calloc((uint64_t) width * (uint64_t) height, sizeof(uint16_t));
     g->preorder = malloc((uint64_t) width * (uint64_t) height * sizeof(uint64_t));
     if (g->dsu == NULL || g->board == NULL || g->player_areas == NULL ||
-        g->player_adjacent == NULL || g->player_golden_used == NULL || 
+        g->player_adjacent == NULL || g->player_golden_used == NULL ||
         g->preorder == NULL || g->num_of_bridges == NULL) {
-          free(g);
+          gamma_delete(g);
           return NULL;
     }
     return g;
@@ -65,20 +67,30 @@ uint64_t gamma_busy_fields(gamma_t *g, uint32_t player) {
 uint64_t gamma_free_fields(gamma_t *g, uint32_t player) {
   if (g == NULL || player > g->players || player == 0)
     return 0;
-  else if (g->player_areas[player - 1] < g -> max_areas)
+  else if (g->player_areas[player - 1] < g->max_areas)
     return g->empty_fields;
   else
     return g->player_adjacent[player - 1];
 }
 
+static bool golden_possible_iteration(gamma_t *g, uint32_t player) {
+  uint16_t i, j;
+  for (j = 0; j < g->height; j++)
+    for (i = 0; i < g->width; i++)
+      if (golden_possible_to_field(g, player, i, j))
+        return true;
+
+  return false;
+}
 
 bool gamma_golden_possible(gamma_t *g, uint32_t player) {
-  if (g == NULL || player > g->players || player == 0)
+  if (!old_golden_possible(g, player))
     return false;
-  else
-    return (! g->player_golden_used[player - 1]) &&
-      ((g->width * g->height) - (g->empty_fields) -
-      (g->player_fields[player - 1]) > 0);
+
+  if (!g->low_updated)
+    actualise_low_all(g);
+
+  return golden_possible_iteration(g, player);
 }
 
 

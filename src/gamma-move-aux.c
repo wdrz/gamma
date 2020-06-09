@@ -29,7 +29,17 @@ void update_length_of_gamma_board(gamma_t *g, uint32_t old, uint32_t new) {
   }
 }
 
-void update_dsu_and_areas(gamma_t *g, uint32_t player, uint32_t x, uint32_t y) {
+/* @brief Aktualizuje stan struktury zbiorów rozłącznych.
+ * Gdy puste pole (@p x, @p y) przechodzi na własność gracza @p player, aktualizuje
+ * strukturę zbiorów rozłącznych pól planszy, tak aby pola w tym samym obszarze miały
+ * tego samego reprezentanta. Aktualizuje liczbę obszarów gracza, jeśli ulegnie ona
+ * zmianie w wyniku tego ruchu.
+ * @param[in,out] g   – wskaźnik na strukturę przechowującą stan gry,
+ * @param[in] player   – poprawny numer gracza lub 0 (puste pole),
+ * @param[in] x        – poprawny numer kolumny,
+ * @param[in] y        – poprawny numer wiersza.
+ */
+static void update_dsu_and_areas(gamma_t *g, uint32_t player, uint32_t x, uint32_t y) {
   uint64_t prev_areas[4], curr_area;
   uint16_t i, prev_areas_len = 0;
 
@@ -65,7 +75,7 @@ void update_dsu_and_areas(gamma_t *g, uint32_t player, uint32_t x, uint32_t y) {
  * @param[in] x        – poprawny numer kolumny,
  * @param[in] y        – poprawny numer wiersza.
  */
-static void update_adjacency(gamma_t *g,  uint32_t player, uint32_t x, uint32_t y) {
+static void update_adjacency(gamma_t *g, uint32_t player, uint32_t x, uint32_t y) {
   uint16_t i;
   for (i = 0; i < 4; i++) {
 
@@ -123,6 +133,6 @@ bool gamma_move(gamma_t *g, uint32_t player, uint32_t x, uint32_t y) {
   update_length_of_gamma_board(g, 0, player);
 
   g->low_updated = false;
-  
+
   return true;
 }

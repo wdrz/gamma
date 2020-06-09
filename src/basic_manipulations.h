@@ -53,6 +53,14 @@ typedef struct gamma {
    return x < (g->width) && y < (g->height);
  }
 
+/** Sprawdza, czy gamma jest nie pusta oraz czy numer gracza i współrzędne pola
+ * są poprawne.
+ * @return true jeśli tak, false jeśli nie.
+ */
+static inline bool is_data_correct(gamma_t *g, uint32_t player, uint32_t x, uint32_t y) {
+  return g != NULL && player != 0 && player <= (g->players) && is_addr_correct(g, x, y);
+}
+
 /** @brief Sprawdza, czy gracz może wykonać złoty ruch.
  * Sprawdza, czy gracz @p player jeszcze nie wykonał w tej rozgrywce złotego
  * ruchu i jest przynajmniej jedno pole zajęte przez innego gracza.

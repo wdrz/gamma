@@ -34,7 +34,7 @@ static inline void ignore_rest_on_error(void) {
  * wczytywanie reszty linii, false wpp. Dodatkowo ustawia flagę linii
  * jeśli da się ją wywnisokować po pierwszym jej znaku. */
 static bool look_at_first_char(void) {
-  char first_char = getchar();
+  int first_char = getchar();
   switch (first_char) {
     case EOF:
       CURRENT_LINE->flag = END;
@@ -64,7 +64,7 @@ static bool look_at_first_char(void) {
  * jeśli da się ją wywnisokować po drugim jej znaku. Zakłada, że po wczytaniu
  * pierwszego znaku flaga linii jest ustawiona na OK. */
 static bool look_at_second_char(void) {
-  char second_char = getchar();
+  int second_char = getchar();
   if (second_char == EOF) {
     CURRENT_LINE->flag = ERR_END;
     return false;
@@ -105,7 +105,7 @@ static void look_at_the_rest(void) {
   uint32_t currently_considered_number = 0;
   bool new_block_started = false;
 
-  char character_on_input = getchar();
+  int character_on_input = getchar();
   while (character_on_input != '\n' && character_on_input != EOF) {
     if (isspace(character_on_input)) {
       currently_considered_number = 0;

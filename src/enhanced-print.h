@@ -23,4 +23,11 @@ extern void print_enhanced_board(gamma_t *g, uint32_t player);
 */
 extern char player_character(uint32_t player);
 
+
+extern bool golden_possible_to_field(gamma_t *g, uint32_t player, uint32_t x, uint32_t y);
+
+
+extern uint16_t crumbles_to(gamma_t *g, uint32_t owner, uint32_t x, uint32_t y, uint64_t pos);
+
+
 #endif
