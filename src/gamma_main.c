@@ -19,7 +19,7 @@ static inline bool starts_a_mode(Line *line) {
 static inline bool console_large_enough(gamma_t *g) {
   struct winsize w;
   if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &w) == -1) return false;
-  return w.ws_row > g->width && w.ws_col >= 15 && w.ws_col >= g->height;
+  return w.ws_row > g->height && w.ws_col >= 15 && w.ws_col >= g->width;
 }
 
 /* Zwraca false jeśli nie udało się rozpocząć żadnego trybu i true jeśli udało się. */
@@ -40,10 +40,15 @@ static bool try_to_start_mode(Line *line) {
     return false;
   }
   if (line->command == 'I') {
-    if (!console_large_enough(g) || !run_interactive_mode(g)) {
+    if (!console_large_enough(g)) {
+      fprintf(stderr, "ERROR (BOARD TOO LARGE) %u\n", line->line_number);
+      gamma_delete(g);
+      return false;
+    }
+
+    if (!run_interactive_mode(g)) {
       print_error(line);
       ERROR = true;
-      return false;
     }
 
   } else {

@@ -43,8 +43,35 @@ set(SOURCE_FILES
     src/enhanced-print.h
     )
 
+# Wskazujemy pliki źródłowe do testów.
+set(TEST_SOURCE_FILES
+    src/gamma.c
+    src/gamma.h
+    src/gamma_test.c
+    src/basic_manipulations.c
+    src/basic_manipulations.h
+    src/gamma-move-aux.c
+    src/gamma-move-aux.h
+    src/golden-move-aux.c
+    src/golden-move-aux.h
+    src/interactive-mode.c
+    src/interactive-mode.h
+    src/read-input.c
+    src/read-input.h
+    src/batch-mode.c
+    src/batch-mode.h
+    src/low-module.c
+    src/low-module.h
+    src/enhanced-print.c
+    src/enhanced-print.h
+    )
+
 # Wskazujemy plik wykonywalny.
 add_executable(gamma ${SOURCE_FILES})
+
+# Wskazujemy plik wykonywalny dla testów silnika.
+add_executable(test EXCLUDE_FROM_ALL ${TEST_SOURCE_FILES})
+set_target_properties(test PROPERTIES OUTPUT_NAME gamma_test)
 
 # Dodajemy obsługę Doxygena: sprawdzamy, czy jest zainstalowany i jeśli tak to:
 find_package(Doxygen)

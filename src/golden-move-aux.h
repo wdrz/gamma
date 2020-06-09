@@ -25,6 +25,4 @@
  */
 extern bool gamma_golden_move(gamma_t *g, uint32_t player, uint32_t x, uint32_t y);
 
-extern bool golden_possible_to_field(gamma_t *g, uint32_t player, uint32_t x, uint32_t y);
-
 #endif

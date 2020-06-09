@@ -1,5 +1,6 @@
 #include "enhanced-print.h"
 #include "basic_manipulations.h"
+#include "gamma.h"
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -83,6 +84,18 @@ static void print_enhanced_field(gamma_t *g, uint32_t x, uint32_t y, uint32_t pl
   }
 }
 
+static void draw_footer(gamma_t *g, uint32_t player) {
+  printf("PLAYER ");
+  printf("%c ", player_character(player));
+  printf(BRIGHT);
+  printf("%lu ", gamma_busy_fields(g, player));
+  printf(GREEN);
+  printf("%lu ", gamma_free_fields(g, player));
+  printf(SKY);
+  printf("%s", gamma_golden_possible(g, player) ? "G" : "");
+  printf(RESET);
+}
+
 void print_enhanced_board(gamma_t *g, uint32_t player) {
   uint32_t i, j;
   printf("\e[?25l"); // ukryj kursor
@@ -92,6 +105,6 @@ void print_enhanced_board(gamma_t *g, uint32_t player) {
     }
     printf("\n");
   }
-  printf("\x1b%d", 7); // zapisz pozycje kursora
+  draw_footer(g, player);
   printf("\e[?25h"); // pokaż kursor
 }

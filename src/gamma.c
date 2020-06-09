@@ -45,7 +45,7 @@ gamma_t* gamma_new(uint32_t width, uint32_t height, uint32_t players, uint32_t a
     g->player_adjacent = calloc(players, sizeof(uint32_t));
     g->player_golden_used = calloc(players, sizeof(bool));
     g->num_of_bridges = calloc((uint64_t) width * (uint64_t) height, sizeof(uint16_t));
-    g->preorder = malloc((uint64_t) width * (uint64_t) height * sizeof(uint64_t));
+    g->preorder = calloc((uint64_t) width * (uint64_t) height, sizeof(uint64_t));
     if (g->dsu == NULL || g->board == NULL || g->player_areas == NULL ||
         g->player_adjacent == NULL || g->player_golden_used == NULL ||
         g->preorder == NULL || g->num_of_bridges == NULL) {

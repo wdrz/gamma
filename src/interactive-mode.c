@@ -19,6 +19,7 @@ static gamma_t *BOARD;
 /* Numer gracza, o którym oczekujemy że wykona ruch */
 static uint32_t PLAYER = 1;
 
+/* Ustawiane na false w przypadku wystąpienia błędu */
 static bool SIGNAL = true;
 
 /* Ustawienia konsoli przed i po zainicjowaniu trybu interaktywnego */
@@ -45,19 +46,6 @@ static bool init_console(void) {
   return true;
 }
 
-void debug() {
-  uint32_t i, j;
-  for (j = BOARD->height; j > 0; j--) {
-    for (i = 0; i < BOARD->width; i++) {
-      printf("%hu", BOARD->num_of_bridges[get_position(BOARD, i, j - 1)]);
-    }
-    printf("\n");
-  }
-  printf("\n");
-  for (i = 0; i < BOARD->players; i++) {
-    printf("areas of player %u: %u\n", i + 1, BOARD->player_areas[i]);
-  }
-}
 
 /* Przesuwa rozpatrywane pole w lewo, prawo, górę lub dół w zależności od
  * podanego jako parametr numeru sąsiada. Jeśli przesunięcie nie jest możliwe,
@@ -81,30 +69,21 @@ static void draw_board(void) {
   move_to_right_position();
 }
 
-/* W zapisanym przez funkcję draw_board miejscu wypisuje numer i informacje o graczu */
-static void draw_footer(void) {
-  printf("\x1b%d", 8);  /* Idź do zapisanej pozycji kursora */
-  printf("\x1b[%dK", 2); /* Wyczysc linie w ktorej znajduje się kursor */
-  printf("PLAYER %c %lu %lu %s", player_character(PLAYER),
-    gamma_busy_fields(BOARD, PLAYER), gamma_free_fields(BOARD, PLAYER),
-    gamma_golden_possible(BOARD, PLAYER) ? "G" : "");
-  move_to_right_position();
-}
-
 /* Kończy tryb interaktywny: wychodzi z bufora, wypisuje podsumowanie gry gamma */
 static void finish(void) {
   uint32_t i;
   printf("\033[?1049l"); /* wyjdz z bufora */
-  char *result = gamma_board(BOARD);
 
-  tcsetattr(0, TCSANOW, &OLD_SETTING);
+  if (tcsetattr(0, TCSANOW, &OLD_SETTING) == -1) SIGNAL = false;
 
-  printf("%s", result);
-  free(result);
-  for (i = 1; i <= BOARD->players; i++) {
-    printf("PLAYER %u %lu\n", i, gamma_busy_fields(BOARD, i));
+  if (SIGNAL) {
+    char *result = gamma_board(BOARD);
+    printf("%s", result);
+    free(result);
+    for (i = 1; i <= BOARD->players; i++) {
+      printf("PLAYER %u %lu\n", i, gamma_busy_fields(BOARD, i));
+    }
   }
-  debug();
 }
 
 /* Przeskakuje do następnego gracza, który nadal może wykonać ruch i zwraca true.
@@ -116,7 +95,6 @@ static bool next_player(void) {
     if (gamma_free_fields(BOARD, player) != 0 || gamma_golden_possible(BOARD, player)) {
       PLAYER = player;
       draw_board();
-      draw_footer();
       return true;
     }
   }
@@ -179,7 +157,8 @@ static bool handle_moves(int ch) {
       break;
     case EOF:
       SIGNAL = false;
-      return false;
+      finish();
+      return true;
   }
   return false;
 }
@@ -198,7 +177,6 @@ bool run_interactive_mode(gamma_t *g) {
 
   if (!init_console()) return false;
   draw_board();
-  draw_footer();
 
   CURRENT_X = BOARD->width / 2;
   CURRENT_Y = BOARD->height / 2;

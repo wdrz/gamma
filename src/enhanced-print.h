@@ -23,10 +23,24 @@ extern void print_enhanced_board(gamma_t *g, uint32_t player);
 */
 extern char player_character(uint32_t player);
 
-
+/** Sprawdza czy można wykonać złoty ruch na pole
+* @param[in] g       – poprawny wskaźnik na strukturę przechowującą stan gry,
+* @param[in] player  – poprawny numer gracza,
+* @param[in] x       – poprawny numer kolumny,
+* @param[in] y       – poprawny numer wiersza,
+* @return Zwraca true jeśli gracz @p player możw wykonać ruch na pole @p x, @p y, false wpp.
+*/
 extern bool golden_possible_to_field(gamma_t *g, uint32_t player, uint32_t x, uint32_t y);
 
-
+/** Liczy na ile obszarów rozpadnie się obszar
+* @param[in] g       – poprawny wskaźnik na strukturę przechowującą stan gry,
+* @param[in] owner   – poprawny numer gracza - właściciela pola @p x, @p y.
+* @param[in] x       – poprawny numer kolumny,
+* @param[in] y       – poprawny numer wiersza,
+* @param[in] pos     – indeks pola @p x, @p y.
+* @return liczba obszarów które powstaną z obszaru do którego należy pole @p x, @p y
+* po usunięciu pola @p x, @p y.
+*/
 extern uint16_t crumbles_to(gamma_t *g, uint32_t owner, uint32_t x, uint32_t y, uint64_t pos);
 
 

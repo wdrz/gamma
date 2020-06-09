@@ -14,4 +14,13 @@ gry gamma.
 
 Moduły gamma_main, batch-mode, interactive-mode, read-input umożliwiają przeprowadzanie rozgrywki.
 
+
+Uatrakcyjnienia wyglądu planszy w trybie interaktywnym:
+1. Dodanie kolorów
+ - Na kolor czerwony podświetlają się pola należące do gracza
+ - Na kolor zielony pola na które może wykonać ruch
+ - Na kolor niebieski podświetlają się pola na które może wykonać *złoty ruch*
+2. Ulepszenie komunikatów: odpowiednie liczby wyświetlają się na odpowiednie kolory
+3. Blokada rozpoczęcia rozgrywki w TI niemieszczącej się na ekranie
+
 */

@@ -2,6 +2,7 @@
 #include "golden-move-aux.h"
 #include "gamma-move-aux.h"
 #include "enhanced-print.h"
+#include "low-module.h"
 
 // wykorzystujemy tablice num_of_bridges jako tablice odwiedzonych - i tak przestaje
 // ona być aktualna po wykonaniu złotego ruchu.
@@ -10,7 +11,7 @@
 #define VISITED 60
 
 /* Aktualizuje liczby pól sąsiadujacych z obszarami graczy po zwolnieniu
- * pola (@p x, @p y) graczowi #OWNER
+ * pola (@p x, @p y) należącego poprzednio do gracza #OWNER
  * Zakłada, że właściciel pola (@p x, @p y) jest tymczasowo ustawiony na 0.
  */
 static void change_adjacent(gamma_t *g, uint32_t owner, uint32_t x, uint32_t y) {
@@ -34,11 +35,8 @@ static void change_adjacent(gamma_t *g, uint32_t owner, uint32_t x, uint32_t y) 
 
 /* @brief Przechodzi rekurencyjnie planszę do gry gamma
  * Przechodzi po obszarze do którego należy pole (@p x, @p y) gracza @p owner.
- * Następnik w dsu każdego odwiedzonego wierzchołka ustawia na @p flag.
- * @param[in] flag    – flaga służąca do oznaczania odwiedzonych pól. Przy
- *                      jej pomocy oznaczamy następnika w dsu odwiedzonych pól.
- *                      Ważne jest, aby używać takiej flagi, która nie występuje
- *                      jako regularna wartość w polach, które chcemy przejść,
+ * @param[in,out] g   – poprawny wskaźnik na strukturę przechowującą stan gry,
+ * @param[in] flag    – liczba którą wpisujemy w tablicę dsu odwiedzanych pól,
  * @param[in] owner   – numer gracza po polach którego przechodzimy,
  * @param[in] x       – poprawny numer kolumny,
  * @param[in] y       – poprawny numer wiersza.
@@ -60,9 +58,8 @@ static void make_field_free(gamma_t *g, uint32_t x, uint32_t y, uint32_t owner) 
   uint16_t i;
   uint32_t pos = get_position(g, x, y);
   uint64_t flag;
-  uint16_t ares_after_removal = crumbles_to(g, owner, x, y, pos);
 
-  g->player_areas[owner - 1] += ares_after_removal - 1;
+  g->player_areas[owner - 1] += crumbles_to(g, owner, x, y, pos) - 1;
   update_length_of_gamma_board(g, owner, 0);
   g->player_fields[owner - 1]--;
   g->board[pos] = 0;
@@ -81,13 +78,19 @@ static void make_field_free(gamma_t *g, uint32_t x, uint32_t y, uint32_t owner) 
 }
 
 bool gamma_golden_move(gamma_t *g, uint32_t player, uint32_t x, uint32_t y) {
-  if (!is_data_correct(g, player, x, y) || !golden_possible_to_field(g, player, x, y))
+
+  if (!is_data_correct(g, player, x, y))
+    return false;
+
+  if (!g->low_updated)
+    actualise_low_all(g);
+
+  if (!golden_possible_to_field(g, player, x, y))
     return false;
 
   g->low_updated = false;
   uint32_t owner = g->board[get_position(g, x, y)];
 
-  // teraz usuwamy zmieniamy pole na puste, aktualizując tablicę dsu
   make_field_free(g, x, y, owner);
   gamma_move(g, player, x, y);
 

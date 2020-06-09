@@ -81,7 +81,7 @@ extern bool old_golden_possible(gamma_t *g, uint32_t player);
  * @param[in] g       – wskaźnik na strukturę przechowującą stan gry,
  * @param[in] x       – poprawny numer kolumny,
  * @param[in] y       – poprawny numer wiersza.
- * @return index w tablicy @ref gamma->board pola (@p x, @p y)
+ * @return index w tablicy gamma->board pola (@p x, @p y)
  */
 static inline uint64_t get_position(gamma_t *g, uint32_t x, uint32_t y) {
   return (g->width * y) + x;
@@ -90,7 +90,7 @@ static inline uint64_t get_position(gamma_t *g, uint32_t x, uint32_t y) {
 
 /** @brief Oblicza współrzędne pola zadanego przez pozycję (indeks w tablicy)
  * Wpisuje do @p x i @p y odpowiednio numer wiersza i kolumny, w którym znajduje się
- * pole które jest przechowywane w tablicy @ref gamma->board pola pod indeksem @p poz
+ * pole które jest przechowywane w tablicy gamma->board pola pod indeksem @p poz
  * @param[in] g       – wskaźnik na strukturę przechowującą stan gry,
  * @param[in] pos     – pozycja pola którego współrzędnych poszukujemy,
  * @param[out] x      – wskaźnik na numer kolumny,

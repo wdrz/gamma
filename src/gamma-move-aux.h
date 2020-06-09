@@ -1,5 +1,5 @@
 /** @file
- * Udostępnie funkcje pomocnicze dla gamma_move, dwie funkcje są pomocnicze dla golden_move
+ * Udostępnia funkcję wykonującą ruch oraz funkcje są pomocnicze dla golden_move
  */
 
 #ifndef GAMMA_MOVE_AUX
