@@ -1,7 +1,5 @@
-# Description
-
-
-# Run
+# Gamma - a console game in C
+## Build
 Compile code by running
 
 ```
@@ -11,6 +9,7 @@ cmake ..
 make
 ```
 
+## Run & Description
 After compiling and running the program type
 ```
 I 10 12 2 3
@@ -27,3 +26,7 @@ One can also run the game in bath mode
 B 10 12 2 3
 ```
 and command the game engine by running specific commands.
+
+## Details
+Autor: Witold Drzewakowski
+Spring 2020, as a final project for IPP course at the Faculty of Mathematics, Informatics and Mechanics of the University of Warsaw
